@@ -3,8 +3,8 @@ program ETH;
 uses
   Forms,
   windows,
-  Main in 'src\Main.pas' {MainForm} ,
-  OSD in 'src\OSD.pas' {OSDForm} ,
+  Main in 'src\Main.pas' {MainForm},
+  OSD in 'src\OSD.pas' {OSDForm},
   GoogleTranslate in 'src\GoogleTranslate.pas',
   AGTHServer in 'src\AGTHServer.pas',
   PipeServer in 'src\PipeServer.pas',
@@ -12,7 +12,9 @@ uses
   Pipe in 'src\Pipe.pas',
   AGTHConst in 'src\AGTHConst.pas',
   TextRender in 'src\TextRender.pas',
-  uSettings in 'src\uSettings.pas';
+  uSettings in 'src\uSettings.pas',
+  jsCore in 'src\jsCore.pas',
+  jsHighlighter in 'src\jsHighlighter.pas';
 
 {$R *.res}
 

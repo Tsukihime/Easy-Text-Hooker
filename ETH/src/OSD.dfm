@@ -3,8 +3,8 @@ object OSDForm: TOSDForm
   Top = 0
   BorderStyle = bsNone
   Caption = 'ETH OSD'
-  ClientHeight = 188
-  ClientWidth = 616
+  ClientHeight = 64
+  ClientWidth = 64
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -20,7 +20,7 @@ object OSDForm: TOSDForm
   object Timer1: TTimer
     Interval = 100
     OnTimer = Timer1Timer
-    Left = 368
-    Top = 96
+    Left = 16
+    Top = 16
   end
 end

@@ -5,7 +5,9 @@ interface
 uses Vcl.Samples.Spin, Vcl.ImgList, Vcl.Controls, Vcl.StdCtrls, Vcl.Dialogs,
   Vcl.ExtCtrls, Vcl.ComCtrls, System.Classes, Forms, Types, Winapi.Messages,
   //
-  AGTHServer;
+  AGTHServer,
+  jsCore,
+  jsHighlighter;
 
 type
   TMainForm = class(TForm)
@@ -70,6 +72,13 @@ type
     ColorDialog1: TColorDialog;
     tbOutline: TTrackBar;
     Label16: TLabel;
+    js_preProcess: TTabSheet;
+    Panel1: TPanel;
+    btnScriptLoad: TButton;
+    OpenDialog1: TOpenDialog;
+    chbTextProcessor: TCheckBox;
+    ScriptArea: TRichEdit;
+    mScriptPath: TMemo;
     procedure TimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -88,6 +97,7 @@ type
     procedure imgTextColorClick(Sender: TObject);
     procedure imgOutlineColorClick(Sender: TObject);
     procedure tbOutlineChange(Sender: TObject);
+    procedure btnScriptLoadClick(Sender: TObject);
   private
     procedure OnNewStream(lines: TStrings);
     procedure OnNewText(Text: widestring);
@@ -97,8 +107,11 @@ type
 
     function Translate(Text: widestring): widestring;
     procedure UpdateColorBoxes;
+
+    procedure LoadScript(path: string);
   private
     agserv: TAGTHServer;
+    jstp: JavaScriptTextProcessor;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
@@ -162,6 +175,7 @@ begin
   Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
   try
     Settings.WriteBool('Main', 'ClipboardCopy', ClipboardCopy.checked);
+    Settings.WriteInteger('Main', 'CurrentTab', PageControl.TabIndex);
 
     Settings.BeginSection('Font');
     Settings.WriteString('Name', Memo.Font.Name);
@@ -204,6 +218,11 @@ begin
     Settings.WriteString('HCode', edHCode.Text);
     Settings.WriteInteger('CopyDelay', seDelay.Value);
     Settings.EndSection;
+
+    Settings.BeginSection('jstp');
+    Settings.WriteString('ScriptPath', jstp.ScriptPath);
+    Settings.WriteBool('EnablePreProcess', chbTextProcessor.checked);
+    Settings.EndSection;
   finally
     Settings.Free;
   end;
@@ -216,6 +235,7 @@ begin
   Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
   try
     ClipboardCopy.checked := Settings.ReadBool('Main', 'ClipboardCopy', False);
+    PageControl.TabIndex := Settings.ReadInteger('Main', 'CurrentTab', 0);
 
     Memo.Font.Name := Settings.ReadString('Font', 'Name', Memo.Font.Name);
     Memo.Font.CharSet := Byte(Settings.ReadInteger('Font', 'CharSet',
@@ -270,6 +290,11 @@ begin
     edHCode.Text := Settings.ReadString('HCode', '');
     seDelay.Value := Settings.ReadInteger('CopyDelay', 150);
     Settings.EndSection;
+
+    Settings.BeginSection('jstp');
+    LoadScript(Settings.ReadString('ScriptPath', ''));
+    chbTextProcessor.checked := Settings.ReadBool('EnablePreProcess', False);
+    Settings.EndSection;
   finally
     Settings.Free;
   end;
@@ -279,6 +304,7 @@ procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   agserv.Free;
   SaveSettings;
+  jstp.Free;
   OSDForm.Free;
 end;
 
@@ -286,6 +312,7 @@ procedure TMainForm.FormCreate(Sender: TObject);
 var
   i: Integer;
 begin
+  jstp := JavaScriptTextProcessor.Create;
   OSDForm := TOSDForm.Create(nil);
   agserv := TAGTHServer.Create;
   agserv.OnStream := OnNewStream;
@@ -445,6 +472,22 @@ begin
     OSDForm.TextFont := FontDialog.Font;
 end;
 
+procedure TMainForm.btnScriptLoadClick(Sender: TObject);
+begin
+  OpenDialog1.Filter := '*.js|*.js';
+  OpenDialog1.InitialDir := ExtractFilePath(paramstr(0));
+  if OpenDialog1.Execute(self.Handle) then
+    LoadScript(OpenDialog1.FileName);
+end;
+
+procedure TMainForm.LoadScript(path: string);
+begin
+  mScriptPath.Text := path;
+  jstp.LoadScript(path);
+  ScriptArea.Text := jstp.Script;
+  TRichEditJsHighlighter.jsHighlight(ScriptArea);
+end;
+
 procedure TMainForm.cbEnableOSDClick(Sender: TObject);
 begin
   if cbEnableOSD.checked then
@@ -545,133 +588,16 @@ begin
   cbStreams.ItemIndex := i;
 end;
 
-function FSNEngTextFix(Text: widestring): widestring;
-var
-  s: string;
-  buf, tmp, t2: string;
-  i, len, p: Integer;
-  sl: tstringlist;
-begin
-  s := ' ' + Text + ' ';
-
-  sl := tstringlist.Create;
-
-  i := 1;
-  while i <= length(s) do
-  begin
-    if s[i] = ' ' then
-    begin
-      buf := Trim(buf);
-      if buf <> '' then
-      begin
-        sl.Add(buf);
-        buf := '';
-      end;
-    end
-    else
-      buf := buf + s[i];
-    i := i + 1;
-  end;
-
-  for i := 0 to sl.Count - 1 do
-  begin
-    buf := sl[i];
-    len := length(buf);
-
-    if len > 1 then
-    begin
-      tmp := buf[1] + buf[len];
-      t2 := copy(buf, 2, len - 2);
-      p := pos(tmp, t2) + 1;
-
-      if (p > 1) and (len > 3) then
-      begin
-        delete(buf, p + 1, 1);
-        insert(' ', buf, p + 1);
-        delete(buf, 1, 1);
-      end;
-
-      if buf[1] = buf[len] then
-        delete(buf, 1, 1);
-
-      if (buf[len] = '"') and (buf[1] = '-') then
-        delete(buf, 1, 1);
-
-    end;
-
-    sl[i] := buf;
-  end;
-
-  s := '';
-  for i := 0 to sl.Count - 1 do
-    s := s + sl.Strings[i] + ' ';
-
-  s := StringReplace(s, 'Fuji- Nee', 'Fujinee', [rfReplaceAll]);
-  s := StringReplace(s, 'Fuji--Nee', 'Fujinee', [rfReplaceAll]);
-  s := StringReplace(s, 'Fuji-Nee', 'Fujinee', [rfReplaceAll]);
-
-  s := StringReplace(s, 'Man', 'Ёпт', [rfReplaceAll]);
-
-  Result := s;
-end;
-
-function FSNHAEngTextFix(Text: widestring): widestring;
-var
-  s: string;
-  buf: string;
-  i, cnt: Integer;
-  sl: tstringlist;
-begin
-  s := #32#32#32 + Text + #32#32#32;
-
-  cnt := 0;
-  for i := 1 to length(s) do
-    if s[i] = #32 then
-      cnt := cnt + 1;
-
-  if cnt < (length(s) / 3) then
-  begin
-    Result := s;
-    exit;
-  end;
-
-  sl := tstringlist.Create;
-
-  i := 2;
-  while i <= length(s) - 1 do
-  begin
-    if (s[i] = #32) and (s[i + 1] = #32) then
-    begin
-      buf := StringReplace(buf, #12288, '', [rfReplaceAll]);
-      buf := StringReplace(buf, #32, '', [rfReplaceAll]);
-      if buf <> '' then
-      begin
-        sl.Add(buf);
-        buf := '';
-      end;
-    end
-    else
-      buf := buf + s[i];
-
-    i := i + 1;
-  end;
-
-  s := '';
-  for i := 0 to sl.Count - 1 do
-    s := s + sl.Strings[i] + ' ';
-
-  sl.Free;
-
-  Result := Trim(s);
-end;
-
 procedure TMainForm.OnNewText(Text: widestring);
 var
   s: string;
 begin
   agserv.GetStreamText(Memo1.lines);
 
-  s := FSNHAEngTextFix(Text);
+  if chbTextProcessor.checked then
+    s := jstp.ProcessText(Text)
+  else
+    s := Text;
 
   if DoTranslate.checked then
     s := Translate(s);
@@ -679,7 +605,7 @@ begin
   if (cbEnableOSD.checked) and (rbText.checked) then
     OSDForm.SetText(s);
 
-  if ClipboardCopy.checked then // копировать в буфер
+  if ClipboardCopy.checked then
     Clipboard.AsText := s;
 
   Memo.Text := s;

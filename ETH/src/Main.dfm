@@ -21,86 +21,322 @@
     Top = 0
     Width = 683
     Height = 152
-    ActivePage = TabSheet2
+    ActivePage = TabSheet3
     Align = alClient
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
-    object TabSheet2: TTabSheet
-      Hint = 'Text'
-      Caption = #1058#1077#1082#1089#1090
-      ImageIndex = 1
-      ParentShowHint = False
-      ShowHint = True
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object Memo: TMemo
-        Left = 0
-        Top = 0
-        Width = 675
-        Height = 124
-        Align = alClient
-        BevelInner = bvNone
-        BevelOuter = bvNone
-        BorderStyle = bsNone
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
+    object TabSheet3: TTabSheet
+      Caption = 'AGTH >'
+      ImageIndex = 2
+      DesignSize = (
+        675
+        124)
+      object Memo1: TMemo
+        Left = 199
+        Top = 30
+        Width = 473
+        Height = 91
+        Anchors = [akLeft, akTop, akRight, akBottom]
         ScrollBars = ssVertical
         TabOrder = 0
       end
-    end
-    object TabSheet1: TTabSheet
-      Hint = 'Settings'
-      Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      ParentShowHint = False
-      ShowHint = True
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object ClipboardCopy: TCheckBox
-        Left = 3
+      object cbStreams: TComboBox
+        Left = 199
         Top = 3
-        Width = 198
-        Height = 17
-        Hint = 'Copy text to clipboard'
-        Caption = #1050#1086#1087#1080#1088#1086#1074#1072#1090#1100' '#1090#1077#1082#1089#1090' '#1074' '#1073#1091#1092#1077#1088' '#1086#1073#1084#1077#1085#1072
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 0
-      end
-      object FontSet: TButton
-        Left = 3
-        Top = 26
-        Width = 230
-        Height = 25
-        Hint = 'Set Font'
-        Caption = #1064#1088#1080#1092#1090
-        ParentShowHint = False
-        ShowHint = True
+        Width = 473
+        Height = 21
+        Style = csDropDownList
+        Anchors = [akLeft, akTop, akRight]
         TabOrder = 1
-        OnClick = FontSetClick
+        OnChange = cbStreamsChange
+      end
+      object GroupBox2: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 193
+        Height = 121
+        TabOrder = 2
+        object Label7: TLabel
+          Left = 3
+          Top = 6
+          Width = 45
+          Height = 13
+          Hint = 'Process:'
+          Caption = #1055#1088#1086#1094#1077#1089#1089':'
+        end
+        object Label8: TLabel
+          Left = 3
+          Top = 33
+          Width = 36
+          Height = 13
+          Caption = 'HCode:'
+        end
+        object Label12: TLabel
+          Left = 3
+          Top = 59
+          Width = 111
+          Height = 13
+          Hint = 'Copy to clipboard after'
+          Caption = 'Copy to clipboard after'
+        end
+        object Label13: TLabel
+          Left = 172
+          Top = 59
+          Width = 13
+          Height = 13
+          Caption = 'ms'
+        end
+        object cbProcess: TComboBox
+          Left = 54
+          Top = 3
+          Width = 136
+          Height = 22
+          Style = csOwnerDrawFixed
+          Sorted = True
+          TabOrder = 0
+          OnDrawItem = cbProcessDrawItem
+          OnDropDown = cbProcessDropDown
+        end
+        object edHCode: TEdit
+          Left = 54
+          Top = 30
+          Width = 136
+          Height = 21
+          TabOrder = 1
+        end
+        object btnHook: TButton
+          Left = 3
+          Top = 92
+          Width = 187
+          Height = 25
+          Caption = 'Hook'
+          TabOrder = 2
+          OnClick = btnHookClick
+        end
+        object seDelay: TSpinEdit
+          Left = 120
+          Top = 56
+          Width = 46
+          Height = 22
+          MaxValue = 0
+          MinValue = 0
+          TabOrder = 3
+          Value = 150
+          OnChange = seDelayChange
+        end
+      end
+    end
+    object js_preProcess: TTabSheet
+      Caption = 'Text processor >'
+      ImageIndex = 5
+      object Panel1: TPanel
+        Left = 0
+        Top = 0
+        Width = 153
+        Height = 124
+        Align = alLeft
+        BevelOuter = bvNone
+        TabOrder = 0
+        object btnScriptLoad: TButton
+          Left = 3
+          Top = 94
+          Width = 75
+          Height = 25
+          Caption = 'Load'
+          TabOrder = 0
+          OnClick = btnScriptLoadClick
+        end
+        object chbTextProcessor: TCheckBox
+          Left = 3
+          Top = 3
+          Width = 62
+          Height = 17
+          Caption = 'Enable'
+          TabOrder = 1
+        end
+        object mScriptPath: TMemo
+          Left = 3
+          Top = 26
+          Width = 144
+          Height = 62
+          BevelInner = bvNone
+          BevelOuter = bvNone
+          BorderStyle = bsNone
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -13
+          Font.Name = 'Consolas'
+          Font.Style = []
+          Lines.Strings = (
+            'mScriptPath')
+          ParentFont = False
+          ReadOnly = True
+          TabOrder = 2
+        end
+      end
+      object ScriptArea: TRichEdit
+        Left = 153
+        Top = 0
+        Width = 522
+        Height = 124
+        Align = alClient
+        Font.Charset = RUSSIAN_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'Consolas'
+        Font.Style = []
+        ParentFont = False
+        ReadOnly = True
+        ScrollBars = ssVertical
+        TabOrder = 1
+      end
+    end
+    object TabSheet5: TTabSheet
+      Caption = 'GoogleTranslate >'
+      ImageIndex = 4
+      object GroupBox1: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 438
+        Height = 123
+        DoubleBuffered = False
+        ParentDoubleBuffered = False
+        TabOrder = 0
+        object Label1: TLabel
+          Left = 7
+          Top = 26
+          Width = 123
+          Height = 13
+          Hint = 'Translate into'
+          Caption = #1053#1072#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1087#1077#1088#1077#1074#1086#1076#1072':'
+        end
+        object Label4: TLabel
+          Left = 350
+          Top = 27
+          Width = 24
+          Height = 13
+          Caption = 'Port:'
+          Enabled = False
+        end
+        object Label3: TLabel
+          Left = 160
+          Top = 27
+          Width = 26
+          Height = 13
+          Caption = 'Host:'
+          Enabled = False
+        end
+        object Label5: TLabel
+          Left = 160
+          Top = 75
+          Width = 29
+          Height = 13
+          Caption = 'Login:'
+          Enabled = False
+        end
+        object Label6: TLabel
+          Left = 160
+          Top = 99
+          Width = 26
+          Height = 13
+          Caption = 'Pass:'
+          Enabled = False
+        end
+        object DoTranslate: TCheckBox
+          Left = 7
+          Top = 3
+          Width = 105
+          Height = 17
+          Hint = 'Enable Online Translate'
+          ParentCustomHint = False
+          Caption = #1054#1085#1083#1072#1081#1085' '#1087#1077#1088#1077#1074#1086#1076
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+        end
+        object srclen: TComboBox
+          Left = 3
+          Top = 47
+          Width = 145
+          Height = 21
+          Hint = 'Source language'
+          HelpType = htKeyword
+          Style = csDropDownList
+          TabOrder = 1
+        end
+        object destlen: TComboBox
+          Left = 3
+          Top = 71
+          Width = 145
+          Height = 21
+          Hint = 'Destination language'
+          Style = csDropDownList
+          TabOrder = 2
+        end
+        object useproxy: TCheckBox
+          Left = 160
+          Top = 3
+          Width = 137
+          Height = 17
+          Hint = 'Use proxy'
+          Caption = #1048#1089#1087#1086#1083#1100#1079#1086#1074#1072#1090#1100' '#1087#1088#1086#1082#1089#1080
+          TabOrder = 3
+          OnClick = useproxyClick
+        end
+        object host: TEdit
+          Left = 189
+          Top = 25
+          Width = 153
+          Height = 21
+          Enabled = False
+          TabOrder = 4
+          Text = '127.0.0.1'
+        end
+        object Port: TSpinEdit
+          Left = 376
+          Top = 25
+          Width = 57
+          Height = 22
+          Enabled = False
+          MaxValue = 0
+          MinValue = 0
+          TabOrder = 5
+          Value = 3128
+        end
+        object Autentification: TCheckBox
+          Left = 160
+          Top = 52
+          Width = 153
+          Height = 17
+          Hint = 'Autentification'
+          Caption = #1058#1088#1077#1073#1091#1077#1090#1089#1103' '#1072#1074#1090#1086#1088#1080#1079#1072#1094#1080#1103
+          Enabled = False
+          TabOrder = 6
+          OnClick = AutentificationClick
+        end
+        object LoginEdit: TEdit
+          Left = 192
+          Top = 71
+          Width = 241
+          Height = 21
+          Enabled = False
+          TabOrder = 7
+        end
+        object PassEdit: TEdit
+          Left = 192
+          Top = 95
+          Width = 241
+          Height = 21
+          Enabled = False
+          PasswordChar = '*'
+          TabOrder = 8
+        end
       end
     end
     object TabSheet4: TTabSheet
       Caption = 'OSD'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 3
         Top = 3
@@ -308,255 +544,64 @@
         end
       end
     end
-    object TabSheet5: TTabSheet
-      Caption = 'GoogleTranslate'
-      ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      object GroupBox1: TGroupBox
+    object TabSheet2: TTabSheet
+      Hint = 'Text'
+      Caption = #1058#1077#1082#1089#1090
+      ImageIndex = 1
+      ParentShowHint = False
+      ShowHint = True
+      object Memo: TMemo
         Left = 0
         Top = 0
-        Width = 438
-        Height = 123
-        DoubleBuffered = False
-        ParentDoubleBuffered = False
-        TabOrder = 0
-        object Label1: TLabel
-          Left = 7
-          Top = 26
-          Width = 123
-          Height = 13
-          Hint = 'Translate into'
-          Caption = #1053#1072#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1087#1077#1088#1077#1074#1086#1076#1072':'
-        end
-        object Label4: TLabel
-          Left = 350
-          Top = 27
-          Width = 24
-          Height = 13
-          Caption = 'Port:'
-          Enabled = False
-        end
-        object Label3: TLabel
-          Left = 160
-          Top = 27
-          Width = 26
-          Height = 13
-          Caption = 'Host:'
-          Enabled = False
-        end
-        object Label5: TLabel
-          Left = 160
-          Top = 75
-          Width = 29
-          Height = 13
-          Caption = 'Login:'
-          Enabled = False
-        end
-        object Label6: TLabel
-          Left = 160
-          Top = 99
-          Width = 26
-          Height = 13
-          Caption = 'Pass:'
-          Enabled = False
-        end
-        object DoTranslate: TCheckBox
-          Left = 7
-          Top = 3
-          Width = 105
-          Height = 17
-          Hint = 'Enable Online Translate'
-          ParentCustomHint = False
-          Caption = #1054#1085#1083#1072#1081#1085' '#1087#1077#1088#1077#1074#1086#1076
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 0
-        end
-        object srclen: TComboBox
-          Left = 3
-          Top = 47
-          Width = 145
-          Height = 21
-          Hint = 'Source language'
-          HelpType = htKeyword
-          Style = csDropDownList
-          TabOrder = 1
-        end
-        object destlen: TComboBox
-          Left = 3
-          Top = 71
-          Width = 145
-          Height = 21
-          Hint = 'Destination language'
-          Style = csDropDownList
-          TabOrder = 2
-        end
-        object useproxy: TCheckBox
-          Left = 160
-          Top = 3
-          Width = 137
-          Height = 17
-          Hint = 'Use proxy'
-          Caption = #1048#1089#1087#1086#1083#1100#1079#1086#1074#1072#1090#1100' '#1087#1088#1086#1082#1089#1080
-          TabOrder = 3
-          OnClick = useproxyClick
-        end
-        object host: TEdit
-          Left = 189
-          Top = 25
-          Width = 153
-          Height = 21
-          Enabled = False
-          TabOrder = 4
-          Text = '127.0.0.1'
-        end
-        object Port: TSpinEdit
-          Left = 376
-          Top = 25
-          Width = 57
-          Height = 22
-          Enabled = False
-          MaxValue = 0
-          MinValue = 0
-          TabOrder = 5
-          Value = 3128
-        end
-        object Autentification: TCheckBox
-          Left = 160
-          Top = 52
-          Width = 153
-          Height = 17
-          Hint = 'Autentification'
-          Caption = #1058#1088#1077#1073#1091#1077#1090#1089#1103' '#1072#1074#1090#1086#1088#1080#1079#1072#1094#1080#1103
-          Enabled = False
-          TabOrder = 6
-          OnClick = AutentificationClick
-        end
-        object LoginEdit: TEdit
-          Left = 192
-          Top = 71
-          Width = 241
-          Height = 21
-          Enabled = False
-          TabOrder = 7
-        end
-        object PassEdit: TEdit
-          Left = 192
-          Top = 95
-          Width = 241
-          Height = 21
-          Enabled = False
-          PasswordChar = '*'
-          TabOrder = 8
-        end
-      end
-    end
-    object TabSheet3: TTabSheet
-      Caption = 'AGTH'
-      ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
-      DesignSize = (
-        675
-        124)
-      object Memo1: TMemo
-        Left = 199
-        Top = 30
-        Width = 473
-        Height = 91
-        Anchors = [akLeft, akTop, akRight, akBottom]
+        Width = 675
+        Height = 124
+        Align = alClient
+        BevelInner = bvNone
+        BevelOuter = bvNone
+        BorderStyle = bsNone
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
         ScrollBars = ssVertical
         TabOrder = 0
       end
-      object cbStreams: TComboBox
-        Left = 199
+    end
+    object TabSheet1: TTabSheet
+      Hint = 'Settings'
+      Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Tahoma'
+      Font.Style = []
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      object ClipboardCopy: TCheckBox
+        Left = 3
         Top = 3
-        Width = 473
-        Height = 21
-        Style = csDropDownList
-        Anchors = [akLeft, akTop, akRight]
-        TabOrder = 1
-        OnChange = cbStreamsChange
+        Width = 198
+        Height = 17
+        Hint = 'Copy text to clipboard'
+        Caption = #1050#1086#1087#1080#1088#1086#1074#1072#1090#1100' '#1090#1077#1082#1089#1090' '#1074' '#1073#1091#1092#1077#1088' '#1086#1073#1084#1077#1085#1072
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 0
       end
-      object GroupBox2: TGroupBox
-        Left = 0
-        Top = 0
-        Width = 193
-        Height = 121
-        TabOrder = 2
-        object Label7: TLabel
-          Left = 3
-          Top = 6
-          Width = 45
-          Height = 13
-          Hint = 'Process:'
-          Caption = #1055#1088#1086#1094#1077#1089#1089':'
-        end
-        object Label8: TLabel
-          Left = 3
-          Top = 33
-          Width = 36
-          Height = 13
-          Caption = 'HCode:'
-        end
-        object Label12: TLabel
-          Left = 3
-          Top = 59
-          Width = 111
-          Height = 13
-          Hint = 'Copy to clipboard after'
-          Caption = 'Copy to clipboard after'
-        end
-        object Label13: TLabel
-          Left = 172
-          Top = 59
-          Width = 13
-          Height = 13
-          Caption = 'ms'
-        end
-        object cbProcess: TComboBox
-          Left = 54
-          Top = 3
-          Width = 136
-          Height = 22
-          Style = csOwnerDrawFixed
-          Sorted = True
-          TabOrder = 0
-          OnDrawItem = cbProcessDrawItem
-          OnDropDown = cbProcessDropDown
-        end
-        object edHCode: TEdit
-          Left = 54
-          Top = 30
-          Width = 136
-          Height = 21
-          TabOrder = 1
-        end
-        object btnHook: TButton
-          Left = 3
-          Top = 92
-          Width = 187
-          Height = 25
-          Caption = 'Hook'
-          TabOrder = 2
-          OnClick = btnHookClick
-        end
-        object seDelay: TSpinEdit
-          Left = 120
-          Top = 56
-          Width = 46
-          Height = 22
-          MaxValue = 0
-          MinValue = 0
-          TabOrder = 3
-          Value = 150
-          OnChange = seDelayChange
-        end
+      object FontSet: TButton
+        Left = 3
+        Top = 26
+        Width = 230
+        Height = 25
+        Hint = 'Set Font'
+        Caption = #1064#1088#1080#1092#1090
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 1
+        OnClick = FontSetClick
       end
     end
   end
@@ -586,7 +631,7 @@
     Left = 16
     Top = 112
     Bitmap = {
-      494C010101000800800010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101010008009C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -727,6 +772,10 @@
   end
   object ColorDialog1: TColorDialog
     Left = 144
+    Top = 112
+  end
+  object OpenDialog1: TOpenDialog
+    Left = 176
     Top = 112
   end
 end
