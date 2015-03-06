@@ -17,9 +17,9 @@ object OSDForm: TOSDForm
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13
-  object Timer1: TTimer
-    Interval = 100
-    OnTimer = Timer1Timer
+  object UpdateTimer: TTimer
+    Interval = 200
+    OnTimer = UpdateTimerTimer
     Left = 16
     Top = 16
   end

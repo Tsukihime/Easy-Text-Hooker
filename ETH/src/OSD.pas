@@ -11,9 +11,9 @@ uses
 
 type
   TOSDForm = class(TForm)
-    Timer1: TTimer;
+    UpdateTimer: TTimer;
     procedure FormCreate(Sender: TObject);
-    procedure Timer1Timer(Sender: TObject);
+    procedure UpdateTimerTimer(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
   private
@@ -151,7 +151,7 @@ begin
   FY := Y;
   FWidth := Width;
   FHeight := Height;
-  Timer1Timer(Timer1);
+  UpdateTimerTimer(UpdateTimer);
 end;
 
 procedure TOSDForm.SetText(Text: widestring);
@@ -162,11 +162,9 @@ begin
     FRender.Text := Text;
     RepaintWindow;
   end;
-
-  self.Visible := not(Text = '');
 end;
 
-procedure TOSDForm.Timer1Timer(Sender: TObject);
+procedure TOSDForm.UpdateTimerTimer(Sender: TObject);
 begin
   Width := round(Screen.Width * FWidth / 100);
   Height := round(Screen.Height * FHeight / 100);
