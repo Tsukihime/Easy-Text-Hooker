@@ -14,10 +14,7 @@ type
     Timer: TTimer;
     FontDialog: TFontDialog;
     PageControl: TPageControl;
-    TabSheet1: TTabSheet;
     TabSheet2: TTabSheet;
-    ClipboardCopy: TCheckBox;
-    FontSet: TButton;
     TabSheet3: TTabSheet;
     Memo: TMemo;
     TabSheet4: TTabSheet;
@@ -34,19 +31,9 @@ type
     TabSheet5: TTabSheet;
     GroupBox1: TGroupBox;
     Label1: TLabel;
-    Label4: TLabel;
-    Label3: TLabel;
-    Label5: TLabel;
-    Label6: TLabel;
     DoTranslate: TCheckBox;
     srclen: TComboBox;
     destlen: TComboBox;
-    useproxy: TCheckBox;
-    host: TEdit;
-    Port: TSpinEdit;
-    Autentification: TCheckBox;
-    LoginEdit: TEdit;
-    PassEdit: TEdit;
     GroupBox3: TGroupBox;
     rbClipboard: TRadioButton;
     rbText: TRadioButton;
@@ -79,12 +66,15 @@ type
     chbTextProcessor: TCheckBox;
     ScriptArea: TRichEdit;
     mScriptPath: TMemo;
+    Panel2: TPanel;
+    FontSet: TButton;
+    ClipboardCopy: TCheckBox;
+    Label3: TLabel;
+    Label4: TLabel;
     procedure TimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FontSetClick(Sender: TObject);
-    procedure AutentificationClick(Sender: TObject);
-    procedure useproxyClick(Sender: TObject);
     procedure cbStreamsChange(Sender: TObject);
     procedure cbEnableOSDClick(Sender: TObject);
     procedure cbProcessDropDown(Sender: TObject);
@@ -187,14 +177,8 @@ begin
 
     Settings.BeginSection('GoogleTranslate');
     Settings.WriteBool('DoTranslate', DoTranslate.checked);
-    Settings.WriteBool('DoUseProxy', useproxy.checked);
-    Settings.WriteBool('DoAutentification', Autentification.checked);
-    Settings.WriteString('Host', host.Text);
-    Settings.WriteInteger('Port', Port.Value);
     Settings.WriteInteger('SrcLang', srclen.ItemIndex);
     Settings.WriteInteger('DestLang', destlen.ItemIndex);
-    Settings.WriteString('Login', LoginEdit.Text);
-    Settings.WriteString('Pass', PassEdit.Text);
     Settings.EndSection;
 
     Settings.BeginSection('OSD');
@@ -248,15 +232,9 @@ begin
 
     Settings.BeginSection('GoogleTranslate');
     DoTranslate.checked := Settings.ReadBool('DoTranslate', False);
-    useproxy.checked := Settings.ReadBool('DoUseProxy', False);
-    Autentification.checked := Settings.ReadBool('DoAutentification', False);
 
-    host.Text := Settings.ReadString('Host', '127.0.0.1');
-    Port.Value := Settings.ReadInteger('Port', 3128);
     srclen.ItemIndex := Settings.ReadInteger('SrcLang', 32);
     destlen.ItemIndex := Settings.ReadInteger('DestLang', 45);
-    LoginEdit.Text := Settings.ReadString('Login', '');
-    PassEdit.Text := Settings.ReadString('Pass', '');
     Settings.EndSection;
 
     Settings.BeginSection('OSD');
@@ -328,7 +306,6 @@ begin
   end;
 
   LoadSettings;
-  useproxyClick(useproxy);
   UpdateColorBoxes;
 end;
 
@@ -346,16 +323,6 @@ procedure TMainForm.OSDPosChange(Sender: TObject);
 begin
   OSDForm.SetPosition(tbX.Position, tbY.Position, tbWidth.Position,
     tbHeight.Position);
-end;
-
-procedure TMainForm.useproxyClick(Sender: TObject);
-begin
-  host.Enabled := useproxy.checked;
-  Port.Enabled := useproxy.checked;
-  Label3.Enabled := useproxy.checked;
-  Label4.Enabled := useproxy.checked;
-  Autentification.Enabled := useproxy.checked;
-  AutentificationClick(Autentification);
 end;
 
 procedure TMainForm.UpdateColorBoxes;
@@ -414,28 +381,10 @@ begin
     Memo.Font := FontDialog.Font;
 end;
 
-procedure TMainForm.AutentificationClick(Sender: TObject);
-begin
-  LoginEdit.Enabled := Autentification.checked and useproxy.checked;
-  PassEdit.Enabled := Autentification.checked and useproxy.checked;
-  Label5.Enabled := Autentification.checked and useproxy.checked;
-  Label6.Enabled := Autentification.checked and useproxy.checked;
-end;
-
 function TMainForm.Translate(Text: widestring): widestring;
-var
-  Settings: TGTranslateSettings;
 begin
-  Settings.useproxy := useproxy.checked;
-  Settings.Port := Port.Value;
-  Settings.host := host.Text;
-  Settings.Autentification := Autentification.checked;
-  Settings.ProxyUsername := LoginEdit.Text;
-  Settings.ProxyPassword := PassEdit.Text;
-  Settings.srclang := srclen.ItemIndex;
-  Settings.destlang := destlen.ItemIndex;
-
-  Result := GTranslate(Text, Settings);
+  Result := TGoogleTranslate.Translate(Text, srclen.ItemIndex,
+    destlen.ItemIndex);
 end;
 
 procedure TMainForm.btnHookClick(Sender: TObject);

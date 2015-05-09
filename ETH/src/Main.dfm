@@ -198,7 +198,7 @@
       object GroupBox1: TGroupBox
         Left = 0
         Top = 0
-        Width = 438
+        Width = 193
         Height = 123
         DoubleBuffered = False
         ParentDoubleBuffered = False
@@ -211,37 +211,19 @@
           Hint = 'Translate into'
           Caption = #1053#1072#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1087#1077#1088#1077#1074#1086#1076#1072':'
         end
-        object Label4: TLabel
-          Left = 350
-          Top = 27
-          Width = 24
-          Height = 13
-          Caption = 'Port:'
-          Enabled = False
-        end
         object Label3: TLabel
-          Left = 160
-          Top = 27
-          Width = 26
+          Left = 3
+          Top = 50
+          Width = 28
           Height = 13
-          Caption = 'Host:'
-          Enabled = False
+          Caption = 'From:'
         end
-        object Label5: TLabel
-          Left = 160
-          Top = 75
-          Width = 29
+        object Label4: TLabel
+          Left = 3
+          Top = 77
+          Width = 16
           Height = 13
-          Caption = 'Login:'
-          Enabled = False
-        end
-        object Label6: TLabel
-          Left = 160
-          Top = 99
-          Width = 26
-          Height = 13
-          Caption = 'Pass:'
-          Enabled = False
+          Caption = 'To:'
         end
         object DoTranslate: TCheckBox
           Left = 7
@@ -256,7 +238,7 @@
           TabOrder = 0
         end
         object srclen: TComboBox
-          Left = 3
+          Left = 35
           Top = 47
           Width = 145
           Height = 21
@@ -266,71 +248,13 @@
           TabOrder = 1
         end
         object destlen: TComboBox
-          Left = 3
-          Top = 71
+          Left = 35
+          Top = 74
           Width = 145
           Height = 21
           Hint = 'Destination language'
           Style = csDropDownList
           TabOrder = 2
-        end
-        object useproxy: TCheckBox
-          Left = 160
-          Top = 3
-          Width = 137
-          Height = 17
-          Hint = 'Use proxy'
-          Caption = #1048#1089#1087#1086#1083#1100#1079#1086#1074#1072#1090#1100' '#1087#1088#1086#1082#1089#1080
-          TabOrder = 3
-          OnClick = useproxyClick
-        end
-        object host: TEdit
-          Left = 189
-          Top = 25
-          Width = 153
-          Height = 21
-          Enabled = False
-          TabOrder = 4
-          Text = '127.0.0.1'
-        end
-        object Port: TSpinEdit
-          Left = 376
-          Top = 25
-          Width = 57
-          Height = 22
-          Enabled = False
-          MaxValue = 0
-          MinValue = 0
-          TabOrder = 5
-          Value = 3128
-        end
-        object Autentification: TCheckBox
-          Left = 160
-          Top = 52
-          Width = 153
-          Height = 17
-          Hint = 'Autentification'
-          Caption = #1058#1088#1077#1073#1091#1077#1090#1089#1103' '#1072#1074#1090#1086#1088#1080#1079#1072#1094#1080#1103
-          Enabled = False
-          TabOrder = 6
-          OnClick = AutentificationClick
-        end
-        object LoginEdit: TEdit
-          Left = 192
-          Top = 71
-          Width = 241
-          Height = 21
-          Enabled = False
-          TabOrder = 7
-        end
-        object PassEdit: TEdit
-          Left = 192
-          Top = 95
-          Width = 241
-          Height = 21
-          Enabled = False
-          PasswordChar = '*'
-          TabOrder = 8
         end
       end
     end
@@ -552,13 +476,12 @@
       ShowHint = True
       object Memo: TMemo
         Left = 0
-        Top = 0
+        Top = 28
         Width = 675
-        Height = 124
+        Height = 96
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone
-        BorderStyle = bsNone
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -567,41 +490,44 @@
         ParentFont = False
         ScrollBars = ssVertical
         TabOrder = 0
+        ExplicitTop = 33
+        ExplicitHeight = 91
       end
-    end
-    object TabSheet1: TTabSheet
-      Hint = 'Settings'
-      Caption = #1053#1072#1089#1090#1088#1086#1081#1082#1080
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Tahoma'
-      Font.Style = []
-      ParentFont = False
-      ParentShowHint = False
-      ShowHint = True
-      object ClipboardCopy: TCheckBox
-        Left = 3
-        Top = 3
-        Width = 198
-        Height = 17
-        Hint = 'Copy text to clipboard'
-        Caption = #1050#1086#1087#1080#1088#1086#1074#1072#1090#1100' '#1090#1077#1082#1089#1090' '#1074' '#1073#1091#1092#1077#1088' '#1086#1073#1084#1077#1085#1072
-        ParentShowHint = False
-        ShowHint = True
-        TabOrder = 0
-      end
-      object FontSet: TButton
-        Left = 3
-        Top = 26
-        Width = 230
-        Height = 25
-        Hint = 'Set Font'
-        Caption = #1064#1088#1080#1092#1090
-        ParentShowHint = False
-        ShowHint = True
+      object Panel2: TPanel
+        Left = 0
+        Top = 0
+        Width = 675
+        Height = 28
+        Align = alTop
+        BevelOuter = bvNone
         TabOrder = 1
-        OnClick = FontSetClick
+        DesignSize = (
+          675
+          28)
+        object FontSet: TButton
+          Left = 603
+          Top = 0
+          Width = 69
+          Height = 25
+          Hint = 'Set Font'
+          Anchors = [akTop, akRight]
+          Caption = #1064#1088#1080#1092#1090
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+          OnClick = FontSetClick
+        end
+        object ClipboardCopy: TCheckBox
+          Left = 8
+          Top = 4
+          Width = 198
+          Height = 17
+          Hint = 'Copy text to clipboard'
+          Caption = #1050#1086#1087#1080#1088#1086#1074#1072#1090#1100' '#1090#1077#1082#1089#1090' '#1074' '#1073#1091#1092#1077#1088' '#1086#1073#1084#1077#1085#1072
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 1
+        end
       end
     end
   end
@@ -631,7 +557,7 @@
     Left = 16
     Top = 112
     Bitmap = {
-      494C0101010008009C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010101000800A00010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

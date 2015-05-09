@@ -3,7 +3,12 @@
 interface
 
 uses
-  IdHTTP, SysUtils;
+  IdHTTP,
+  SysUtils,
+  DBXJSON,
+  HTTPApp,
+  IdSSLOpenSSL,
+  System.RegularExpressions;
 
 type
   Langrec = record
@@ -11,18 +16,18 @@ type
     name: string;
   end;
 
-  TGTranslateSettings = record
-    useproxy: boolean;
-    port: Integer;
-    host: string;
-    Autentification: boolean;
-    ProxyUsername: string;
-    ProxyPassword: string;
-    srclang, destlang: Integer;
+  TGoogleTranslate = class
+  private
+    function GTranslate(Text: widestring; srclang, destlang: Integer): string;
+    function ExtractTranslation(json: string): string;
+    function HTTPGet(url: string): string;
+    function URLEncode(const wstr: widestring): string;
+    function MatchEvaluator(const Match: TMatch): string;
+    function FixGoogleJSON(json: string): string;
+  public
+    class function Translate(Text: widestring;
+      srclang, destlang: Integer): string;
   end;
-
-function GTranslate(Text: widestring;
-  const settings: TGTranslateSettings): string;
 
 var
   LangArr: array [0 .. 58] of Langrec = ((langid: 'af'; name: 'Afrikaans'),
@@ -59,7 +64,22 @@ var
 
 implementation
 
-function URLEncode(const wstr: widestring): string;
+{ TGoogleTranslate }
+
+class function TGoogleTranslate.Translate(Text: widestring;
+  srclang, destlang: Integer): string;
+var
+  gt: TGoogleTranslate;
+begin
+  gt := TGoogleTranslate.Create;
+  try
+    Result := gt.GTranslate(Text, srclang, destlang);
+  finally
+    gt.Free;
+  end;
+end;
+
+function TGoogleTranslate.URLEncode(const wstr: widestring): string;
 var
   i: Integer;
   S: RawByteString;
@@ -74,26 +94,18 @@ begin
   StringBuilder.Free;
 end; // URLEncode
 
-function HTTPGet(url: string; const settings: TGTranslateSettings): string;
+function TGoogleTranslate.HTTPGet(url: string): string;
 var
   http: TidHttp;
 begin
   http := TidHttp.Create(nil);
   try
-    if settings.useproxy then
-    begin
-      http.ProxyParams.ProxyPort := settings.port;
-      http.ProxyParams.ProxyServer := settings.host;
-      if settings.Autentification then
-      begin
-        http.ProxyParams.ProxyUsername := settings.ProxyUsername;
-        http.ProxyParams.ProxyPassword := settings.ProxyPassword;
-      end;
-    end;
+    http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(http);
+    http.HandleRedirects := True;
 
     http.Request.AcceptCharSet := 'utf-8';
     http.Request.AcceptEncoding := 'utf-8';
-    http.Request.Referer := 'http://google.com';
+    http.Request.Referer := 'https://translate.google.com/';
     http.Request.UserAgent :=
       'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
     // без рефера выдает кодировки отличные от utf-8
@@ -103,58 +115,79 @@ begin
   end;
 end;
 
-function GTranslate(Text: widestring;
-  const settings: TGTranslateSettings): string;
+function TGoogleTranslate.MatchEvaluator(const Match: TMatch): string;
+begin
+  if Match.Groups['quoted'].Length > 0 then
+    Result := Match.Groups['quoted'].Value
+  else if Match.Groups['left'].Length > 0 then
+    Result := 'null,'
+  else if Match.Groups['right'].Length > 0 then
+    Result := ',null'
+  else
+    Result := Match.Value;
+end;
+
+// replace [,,"...",  in json to [null,null,"...",
+function TGoogleTranslate.FixGoogleJSON(json: string): string;
+begin
+  Result := TRegEx.Replace(json, '(?<quoted>"(?:[^"\\]|\\.)*")|' +
+    '(?<=[,\[])(?<left>,)|' + '(?<right>,)(?=[,\]])', MatchEvaluator);
+end;
+
+function TGoogleTranslate.ExtractTranslation(json: string): string;
 var
-  response: UTF8String;
-  url, srctext: string;
+  JSONValue: TJSONValue;
+  arr, sentence_arr: TJSONArray;
+  i: Integer;
+begin
+  Result := '';
+  JSONValue := TJSONObject.ParseJSONValue(json) as TJSONValue;
+  if Assigned(JSONValue) then
+    try
+      try
+        // [[["needle", "..."],["needle2", "..."]  ...
+        arr := JSONValue as TJSONArray;
+        arr := arr.Get(0) as TJSONArray;
+        for i := 0 to arr.Size - 2 do // skip last
+        begin
+          sentence_arr := arr.Get(i) as TJSONArray;
+          Result := Result + (sentence_arr.Get(0) as TJSONString).Value;
+        end;
+      except
+        Result := '';
+        exit;
+      end;
 
-  procedure UnescappeStr(var str: string);
-  begin
-    str := StringReplace(str, '\u0026quot;', '"', [rfReplaceAll]);
-    str := StringReplace(str, '\u0026#39;', #39, [rfReplaceAll]);
-    str := StringReplace(str, '\u0026gt;', '>', [rfReplaceAll]);
-    str := StringReplace(str, '\u0026lt;', '<', [rfReplaceAll]);
-    str := StringReplace(str, '\u0026amp;', '', [rfReplaceAll]);
-    str := StringReplace(str, '\u200b', '', [rfReplaceAll]);
-  end;
-
-  function ParseJSON_lol(response: string): string;
-  var
-    S: string;
-    i: Integer;
-  begin
-    response := Copy(response, pos('[[["', response) + 4, Length(response));
-
-    i := 1;
-    while (i <= Length(response)) do
-    begin
-      if (response[i] = '\') then
-        inc(i)
-      else if (response[i] = '"') then
-        break;
-      S := S + response[i];
-      inc(i); // i++;
+      Result := HTMLDecode(Result);
+    finally
+      JSONValue.Free;
     end;
-    UnescappeStr(S);
-    Result := S;
-  end;
+end;
 
+function TGoogleTranslate.GTranslate(Text: widestring;
+  srclang, destlang: Integer): string;
+var
+  response, url, srctext, sl, tl: string;
 begin
   srctext := URLEncode(Text);
+  sl := LangArr[srclang].langid;
+  tl := LangArr[destlang].langid;
 
-  url := 'http://www.google.com/translate_a/t?client=t&sl=' +
-    LangArr[settings.srclang].langid + '&tl=' + LangArr[settings.destlang]
-    .langid + '&text=' + srctext;
+  url := Format
+    ('https://translate.google.com/translate_a/single?client=t&sl=%s&tl=%s&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&otf=1&ssel=0&tsel=0&kc=0&q=%s',
+    [sl, tl, srctext]);
+
   try
-    response := UTF8String(HTTPGet(url, settings));
-    // если нет инета возвращаем исходный текст
+    response := HTTPGet(url);
   except
     Result := Text;
     exit;
   end;
 
-  Result := ParseJSON_lol(string(response));
+  Result := ExtractTranslation(FixGoogleJSON(response));
+  if Result = '' then
+    Result := Text;
+
 end;
 
 end.
