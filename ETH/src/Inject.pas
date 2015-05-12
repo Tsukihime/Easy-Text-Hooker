@@ -9,6 +9,16 @@ uses
   Classes;
 
 type
+  THooker = class
+  public
+    class procedure GetProcessList(List: TStrings);
+    class procedure HookProcess(processId: Cardinal; AGTHCommandLine: string);
+  private
+    class function GenerateHCode(AGTHcmd: string): string;
+    class function InjectDll(Process: DWORD;
+      ModulePath, HCode: WideString): boolean;
+  end;
+
   TInject = packed record
     // code
     cmd0: BYTE;
@@ -35,11 +45,6 @@ type
     LibraryPath: array [0 .. MAX_PATH] of WideChar;
   end;
 
-function InjectDll(Process: DWORD; ModulePath: PChar;
-  HCode: WideString): boolean;
-function GenerateHCode(AGTHcmd: string): string;
-procedure GetProcessList(List: TStrings);
-
 const
   NV_PARAM = $01;
   HOOK_SET_1 = $02;
@@ -57,8 +62,8 @@ const // asm cmd
 implementation
 
 { Внедрение Dll в процесс }
-function InjectDll(Process: DWORD; ModulePath: PChar;
-  HCode: WideString): boolean;
+class function THooker.InjectDll(Process: DWORD;
+  ModulePath, HCode: WideString): boolean;
 var
   Memory: Pointer;
   CodeBase: DWORD;
@@ -111,7 +116,7 @@ begin
     pExitThread := GetProcAddress(hKernel32, 'ExitThread');
     pSetEnvironmentVariableW := GetProcAddress(hKernel32,
       'SetEnvironmentVariableW');
-    lstrcpy(@LibraryPath, ModulePath);
+    lstrcpy(@LibraryPath, PWideChar(ModulePath));
     lstrcpy(@ENVName, PWideChar('AGTH'));
     lstrcpy(@ENVValue, PWideChar(HCode));
   end;
@@ -129,7 +134,7 @@ begin
   Result := true;
 end;
 
-procedure GetProcessList(List: TStrings);
+class procedure THooker.GetProcessList(List: TStrings);
 var
   ContinueLoop: BOOL;
   FSnapshotHandle: THandle;
@@ -149,7 +154,7 @@ begin
   CloseHandle(FSnapshotHandle);
 end;
 
-function GenerateHCode(AGTHcmd: string): string;
+class function THooker.GenerateHCode(AGTHcmd: string): string;
 var
   i: Integer;
   lcmd, uFlag, sFlag: string;
@@ -203,6 +208,27 @@ begin
     sFlag := '';
 
   Result := IntToHex(flags, 1) + sFlag + uFlag;
+end;
+
+class procedure THooker.HookProcess(processId: Cardinal;
+  AGTHCommandLine: string);
+var
+  HCode: string;
+  pHwnd: THandle;
+  ModPath: string;
+begin
+  HCode := GenerateHCode(AGTHCommandLine);
+
+  pHwnd := OpenProcess(PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION or
+    PROCESS_VM_READ or PROCESS_VM_WRITE or PROCESS_QUERY_INFORMATION, false,
+    processId);
+
+  if pHwnd <> 0 then
+  begin
+    ModPath := ExtractFilePath(paramstr(0)) + 'agth.dll';
+    InjectDll(pHwnd, ModPath, HCode);
+    CloseHandle(pHwnd);
+  end;
 end;
 
 end.

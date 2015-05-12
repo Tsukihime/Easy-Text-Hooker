@@ -130,19 +130,27 @@
     object js_preProcess: TTabSheet
       Caption = 'Text processor >'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 0
         Top = 0
-        Width = 153
-        Height = 124
-        Align = alLeft
+        Width = 675
+        Height = 27
+        Align = alTop
         BevelOuter = bvNone
         TabOrder = 0
+        DesignSize = (
+          675
+          27)
         object btnScriptLoad: TButton
-          Left = 3
-          Top = 94
+          Left = 595
+          Top = -1
           Width = 75
           Height = 25
+          Anchors = [akTop, akRight]
           Caption = 'Load'
           TabOrder = 0
           OnClick = btnScriptLoadClick
@@ -156,10 +164,11 @@
           TabOrder = 1
         end
         object mScriptPath: TMemo
-          Left = 3
-          Top = 26
-          Width = 144
-          Height = 62
+          Left = 71
+          Top = 3
+          Width = 518
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
           BevelInner = bvNone
           BevelOuter = bvNone
           BorderStyle = bsNone
@@ -176,10 +185,10 @@
         end
       end
       object ScriptArea: TRichEdit
-        Left = 153
-        Top = 0
-        Width = 522
-        Height = 124
+        Left = 0
+        Top = 27
+        Width = 675
+        Height = 97
         Align = alClient
         Font.Charset = RUSSIAN_CHARSET
         Font.Color = clWindowText
@@ -195,6 +204,10 @@
     object TabSheet5: TTabSheet
       Caption = 'GoogleTranslate >'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox1: TGroupBox
         Left = 0
         Top = 0
@@ -261,6 +274,10 @@
     object TabSheet4: TTabSheet
       Caption = 'OSD'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 3
         Top = 3
@@ -474,6 +491,10 @@
       ImageIndex = 1
       ParentShowHint = False
       ShowHint = True
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Memo: TMemo
         Left = 0
         Top = 28
@@ -490,8 +511,6 @@
         ParentFont = False
         ScrollBars = ssVertical
         TabOrder = 0
-        ExplicitTop = 33
-        ExplicitHeight = 91
       end
       object Panel2: TPanel
         Left = 0
@@ -505,9 +524,9 @@
           675
           28)
         object FontSet: TButton
-          Left = 603
+          Left = 597
           Top = 0
-          Width = 69
+          Width = 75
           Height = 25
           Hint = 'Set Font'
           Anchors = [akTop, akRight]
@@ -548,7 +567,7 @@
     Top = 112
   end
   object ProcIcon: TImageList
-    BkColor = clWindow
+    BkColor = clWhite
     Masked = False
     Left = 48
     Top = 112
@@ -557,7 +576,7 @@
     Left = 16
     Top = 112
     Bitmap = {
-      494C010101000800A00010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010101000800B00010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000001000000001002000000000000010
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000

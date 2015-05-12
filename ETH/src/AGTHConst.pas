@@ -12,7 +12,7 @@ type
     UpTime: Cardinal;
     TextLength: Cardinal;
     HookName: array [0 .. 23] of ansichar;
-    // Д~Дu ДЕДrДuДВДuД~ Д~ДpДГДЙДuДД ДБДАДГД|ДuДtД~ДyДЗ 2(3) ДГДyД}ДrДАД|ДАДr
+    // не уверен насчЄт последних 2(3) символов
     Text: array [0 .. 4061] of widechar;
   end;
 

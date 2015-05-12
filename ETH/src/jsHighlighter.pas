@@ -86,7 +86,6 @@ begin
   richedit.PlainText := true;
   text := richedit.text;
   richedit.PlainText := false;
-  lastpos := 0;
 
   state := 0;
   current_line := 0;

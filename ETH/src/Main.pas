@@ -391,26 +391,12 @@ procedure TMainForm.btnHookClick(Sender: TObject);
 var
   pid: cardinal;
   idx: Integer;
-  HCode: string;
-  pHwnd: THandle;
-  ModPath: string;
 begin
   idx := cbProcess.ItemIndex;
   if (idx >= 0) and (idx < cbProcess.Items.Count) then
   begin
     pid := cardinal(cbProcess.Items.Objects[cbProcess.ItemIndex]);
-    HCode := GenerateHCode(edHCode.Text);
-
-    pHwnd := OpenProcess(PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION or
-      PROCESS_VM_READ or PROCESS_VM_WRITE or PROCESS_QUERY_INFORMATION,
-      False, pid);
-
-    if pHwnd <> 0 then
-    begin
-      ModPath := ExtractFilePath(paramstr(0)) + 'agth.dll';
-      InjectDll(pHwnd, PChar(ModPath), HCode);
-      CloseHandle(pHwnd);
-    end;
+    THooker.HookProcess(pid, edHCode.Text);
   end;
 end;
 
@@ -482,7 +468,7 @@ var
   hico: THandle;
 begin
   itindex := cbProcess.ItemIndex;
-  GetProcessList(cbProcess.Items);
+  THooker.GetProcessList(cbProcess.Items);
   ProcIcon.Clear;
   for i := 0 to cbProcess.Items.Count - 1 do
   begin
