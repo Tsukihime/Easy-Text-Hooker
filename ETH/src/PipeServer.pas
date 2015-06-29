@@ -43,8 +43,7 @@ type
 
     function FillWOArray(var WOArr: TWOHandles): Cardinal;
     function FindPipe(ev: THandle; var Pipe: TPipe): boolean;
-    function ProcessPipeEvent(const pip: TPipe): boolean;
-    procedure FreeAndClosePipe(var Pipe: TPipe);
+    procedure ClosePipe(Pipe: TPipe);
   end;
 
   TSyncPckt = packed record
@@ -186,42 +185,11 @@ begin
     end;
 end;
 
-procedure TPipeServer.FreeAndClosePipe(var Pipe: TPipe);
+procedure TPipeServer.ClosePipe(Pipe: TPipe);
 begin
   Pipes.Extract(Pipe);
-  DoDisconnect(Pipe.Pipe);
+  DoDisconnect(Pipe.hPipe);
   Pipe.Free;
-  Pipe := nil;
-end;
-
-function TPipeServer.ProcessPipeEvent(const pip: TPipe): boolean;
-var
-  fSuccess: boolean;
-  BytesRead: Cardinal;
-begin
-  if pip.IOPending then
-    DoReceive(pip.Pipe, pip.Data);
-
-  pip.ClearBuffer();
-
-  fSuccess := ReadFile(pip.Pipe, pip.Data, SizeOf(TAGTHRcPckt), BytesRead,
-    pip.OverLapRd);
-
-  if ((not fSuccess) or (BytesRead = 0)) then
-  begin
-    if GetLastError = ERROR_IO_PENDING then
-    begin
-      pip.IOPending := true;
-      Result := true; // ждем завершения операции
-    end
-    else
-      Result := false; // Экземпляр канала сломался, завершаем обслуживание.
-  end
-  else
-  begin
-    DoReceive(pip.Pipe, pip.Data);
-    Result := true;
-  end;
 end;
 
 procedure TPipeServer.Execute;
@@ -231,9 +199,10 @@ var
   nCount: Cardinal;
   WOIndex: Cardinal;
   ev: THandle;
-  pip: TPipe;
+  Pipe: TPipe;
 begin
   IncomingPipe := TPipe.Create;
+  IncomingPipe.OnReceive := DoReceive;
 
   while not Terminated do
   begin
@@ -244,12 +213,13 @@ begin
     case WaitResult of
       WAIT_OBJECT_0:
         begin // incoming connection
-          DoConnect(IncomingPipe.Pipe);
+          DoConnect(IncomingPipe.hPipe);
 
           Pipes.Add(IncomingPipe);
-          ProcessPipeEvent(IncomingPipe);
+          IncomingPipe.Read;
 
           IncomingPipe := TPipe.Create;
+          IncomingPipe.OnReceive := DoReceive;
         end;
 
       WAIT_OBJECT_0 + 1 .. WAIT_OBJECT_0 + MAXIMUM_WAIT_OBJECTS - 1:
@@ -257,9 +227,9 @@ begin
           WOIndex := WaitResult - WAIT_OBJECT_0;
           ev := WaitEvents[WOIndex];
 
-          if FindPipe(ev, pip) then
-            if not ProcessPipeEvent(pip) then
-              FreeAndClosePipe(pip);
+          if FindPipe(ev, Pipe) then
+            if not Pipe.Read then
+              ClosePipe(Pipe);
         end;
 
       WAIT_ABANDONED_0 + 1 .. WAIT_ABANDONED_0 + MAXIMUM_WAIT_OBJECTS - 1:
@@ -267,8 +237,8 @@ begin
           WOIndex := WaitResult - WAIT_ABANDONED_0;
           ev := WaitEvents[WOIndex];
 
-          if FindPipe(ev, pip) then
-            FreeAndClosePipe(pip);
+          if FindPipe(ev, Pipe) then
+            ClosePipe(Pipe);
         end;
 
       WAIT_TIMEOUT:

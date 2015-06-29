@@ -106,6 +106,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
     procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
     procedure WMActivate(var Message: TWMActivate); message WM_ACTIVATE;
+    procedure ApplicationFocusChanged(Sender: TObject);
   end;
 
 var
@@ -307,6 +308,8 @@ begin
 
   LoadSettings;
   UpdateColorBoxes;
+  Application.OnDeactivate := ApplicationFocusChanged;
+  Application.OnActivate := ApplicationFocusChanged;
 end;
 
 procedure TMainForm.TimerTimer(Sender: TObject);
@@ -387,6 +390,11 @@ begin
     destlen.ItemIndex);
 end;
 
+procedure TMainForm.ApplicationFocusChanged(Sender: TObject);
+begin
+  OSDForm.DrawWindowOutline := Application.Active;
+end;
+
 procedure TMainForm.btnHookClick(Sender: TObject);
 var
   pid: cardinal;
@@ -411,7 +419,7 @@ procedure TMainForm.btnScriptLoadClick(Sender: TObject);
 begin
   OpenDialog1.Filter := '*.js|*.js';
   OpenDialog1.InitialDir := ExtractFilePath(paramstr(0));
-  if OpenDialog1.Execute(self.Handle) then
+  if OpenDialog1.Execute(Self.Handle) then
     LoadScript(OpenDialog1.FileName);
 end;
 

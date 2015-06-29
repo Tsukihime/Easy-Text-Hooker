@@ -20,6 +20,7 @@ type
     FX, FY, FWidth, FHeight: Integer;
     FText: string;
     FRender: TTextRender;
+    FDrawWindowOutline: boolean;
     procedure UpdateWindow(surface: TBitmap);
     procedure RepaintWindow;
     procedure SetTextColor(const Value: TColor);
@@ -30,6 +31,7 @@ type
     function GetOutlineColor: TColor;
     function GetOutlineWidth: Integer;
     function GetTextColor: TColor;
+    procedure SetDrawWindowOutline(const Value: boolean);
   public
     procedure SetText(Text: widestring);
     procedure SetPosition(X, Y, Width, Height: Integer);
@@ -38,6 +40,8 @@ type
     property OutlineColor: TColor read GetOutlineColor write SetOutlineColor;
     property TextFont: TFont read GetFont write SetFont;
     property OutlineWidth: Integer read GetOutlineWidth write setOutlineWidth;
+    property DrawWindowOutline: boolean read FDrawWindowOutline
+      write SetDrawWindowOutline;
   end;
 
 var
@@ -99,6 +103,13 @@ end;
 procedure TOSDForm.FormDestroy(Sender: TObject);
 begin
   FRender.Free;
+end;
+
+procedure TOSDForm.SetDrawWindowOutline(const Value: boolean);
+begin
+  FDrawWindowOutline := Value;
+  FRender.DrawWindowOutline := Value;
+  RepaintWindow;
 end;
 
 procedure TOSDForm.SetFont(Font: TFont);

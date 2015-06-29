@@ -15,6 +15,7 @@ type
     FTextColor: TColor;
     FWidth: Integer;
     FHeight: Integer;
+    FDrawWindowOutline: boolean;
     procedure SetFont(Font: TFont);
     procedure Normalize(surface: TBitmap);
     procedure FillPlaneAndDrawText(surface: TBitmap);
@@ -30,6 +31,8 @@ type
     property OutlineWidth: Integer read FOutlineWidth write FOutlineWidth;
     property Width: Integer read FWidth write FWidth;
     property Height: Integer read FHeight write FHeight;
+    property DrawWindowOutline: boolean read FDrawWindowOutline
+      write FDrawWindowOutline;
   public
     procedure RenderText(surface: TBitmap);
   end;
@@ -44,6 +47,7 @@ begin
   FOutlineWidth := 1;
   FOutlineColor := clWhite;
   FTextColor := clBlack;
+  FDrawWindowOutline := false;
 end;
 
 destructor TTextRender.Destroy;
@@ -116,6 +120,12 @@ begin
           DT_WORDBREAK or DT_NOPREFIX);
       end;
     end;
+
+  if DrawWindowOutline then
+  begin
+    outline.Canvas.Pen.Color := $505050;
+    outline.Canvas.Rectangle(0, 0, Width - 1, Height - 1);
+  end;
 
   for k := 0 to outline.Height - 1 do
   begin
