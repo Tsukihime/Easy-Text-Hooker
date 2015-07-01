@@ -46,7 +46,7 @@ type
   end;
 
 const
-  NV_PARAM = $01;
+  PROCESS_SYSTEM_CONTEXT = $01;
   HOOK_SET_1 = $02;
   HOOK_SET_2 = $04;
   USE_THREAD_CODEPAGE = $08;
@@ -169,8 +169,8 @@ begin
     flags := flags or NO_HOOK_CHILD;
   if pos('/nj', lcmd) > 0 then
     flags := flags or USE_THREAD_CODEPAGE;
-  if pos('/nv', lcmd) > 0 then
-    flags := flags or NV_PARAM;
+  if pos('/v', lcmd) > 0 then
+    flags := flags or PROCESS_SYSTEM_CONTEXT;
 
   if pos('/x3', lcmd) > 0 then
     flags := flags or (HOOK_SET_1 or HOOK_SET_2)
