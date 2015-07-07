@@ -281,6 +281,8 @@ end;
 
 procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  Application.OnDeactivate := nil;
+  Application.OnActivate := nil;
   agserv.Free;
   SaveSettings;
   jstp.Free;
