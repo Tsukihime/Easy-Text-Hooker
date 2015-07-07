@@ -157,7 +157,7 @@
 						<VersionInfo Name="MajorVer">1</VersionInfo>
 						<VersionInfo Name="MinorVer">0</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">141</VersionInfo>
+						<VersionInfo Name="Build">143</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -169,7 +169,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">&quot;VovaN&quot; Company</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription"/>
-						<VersionInfoKeys Name="FileVersion">1.0.0.141</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">1.0.0.143</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">ETH</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright"/>
 						<VersionInfoKeys Name="LegalTrademarks"/>

@@ -409,6 +409,16 @@
           TickStyle = tsNone
           OnChange = OSDPosChange
         end
+        object cbSticky: TCheckBox
+          Left = 11
+          Top = 97
+          Width = 97
+          Height = 17
+          Hint = 'Sticky'
+          Caption = #1051#1080#1087#1082#1086#1077' '#1086#1082#1085#1086
+          TabOrder = 4
+          OnClick = cbStickyClick
+        end
       end
       object Шрифт: TGroupBox
         Left = 399

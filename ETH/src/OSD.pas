@@ -24,6 +24,8 @@ type
     FTextColor: TColor;
     FOutlineWidth: Integer;
     FDrawWindowOutline: boolean;
+    FSticky: boolean;
+    FBoundRect: TRect;
     procedure UpdateWindow(Surface: TGPBitmap);
     procedure RepaintWindow;
     procedure SetTextColor(const Value: TColor);
@@ -37,6 +39,7 @@ type
     procedure SetDrawWindowOutline(const Value: boolean);
     function BGR2ARGB(col: TColor): TColor;
     function FontStyle2GPFontStyle(Style: TFontStyles): Integer;
+    procedure SetSticky(const Value: boolean);
   public
     procedure SetText(Text: widestring);
     procedure SetPosition(X, Y, Width, Height: Integer);
@@ -47,6 +50,7 @@ type
     property OutlineWidth: Integer read GetOutlineWidth write setOutlineWidth;
     property DrawWindowOutline: boolean read FDrawWindowOutline
       write SetDrawWindowOutline;
+    property Sticky: boolean read FSticky write SetSticky;
   end;
 
 var
@@ -201,6 +205,7 @@ procedure TOSDForm.FormCreate(Sender: TObject);
 begin
   SetWindowLong(Handle, GWL_EXSTYLE, GetWindowLong(Handle, GWL_EXSTYLE) or
     WS_EX_TRANSPARENT or WS_EX_LAYERED);
+  FBoundRect := Screen.DesktopRect;
 end;
 
 procedure TOSDForm.SetDrawWindowOutline(const Value: boolean);
@@ -262,6 +267,13 @@ begin
   UpdateTimerTimer(UpdateTimer);
 end;
 
+procedure TOSDForm.SetSticky(const Value: boolean);
+begin
+  FSticky := Value;
+  if not Sticky then
+    FBoundRect := Screen.DesktopRect;
+end;
+
 procedure TOSDForm.SetText(Text: widestring);
 begin
   if FText <> Text then
@@ -272,11 +284,23 @@ begin
 end;
 
 procedure TOSDForm.UpdateTimerTimer(Sender: TObject);
+var
+  HWnd: THandle;
 begin
-  Width := Round(Screen.Width * FWidth / 100);
-  Height := Round(Screen.Height * FHeight / 100);
-  Left := Round((Screen.Width - Width) * FX / 100);
-  Top := Round((Screen.Height - Height) * FY / 100);
+  if Sticky then
+  begin
+    HWnd := GetForegroundWindow();
+    if (HWnd <> 0) and (HWnd <> self.Handle) and
+      (HWnd <> Application.MainForm.Handle) then
+    begin
+      GetWindowRect(HWnd, FBoundRect);
+    end;
+  end;
+
+  Width := Round(FBoundRect.Width * FWidth / 100);
+  Height := Round(FBoundRect.Height * FHeight / 100);
+  Left := FBoundRect.Left + Round((FBoundRect.Width - Width) * FX / 100);
+  Top := FBoundRect.Top + Round((FBoundRect.Height - Height) * FY / 100);
 
   SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height, SWP_NOACTIVATE or
     SWP_NOMOVE or SWP_NOSIZE);

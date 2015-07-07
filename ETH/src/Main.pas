@@ -71,6 +71,7 @@ type
     ClipboardCopy: TCheckBox;
     Label3: TLabel;
     Label4: TLabel;
+    cbSticky: TCheckBox;
     procedure TimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -88,6 +89,7 @@ type
     procedure imgOutlineColorClick(Sender: TObject);
     procedure tbOutlineChange(Sender: TObject);
     procedure btnScriptLoadClick(Sender: TObject);
+    procedure cbStickyClick(Sender: TObject);
   private
     procedure OnNewStream(lines: TStrings);
     procedure OnNewText(Text: widestring);
@@ -197,6 +199,7 @@ begin
     Settings.WriteString('FontColor', inttohex(OSDForm.TextColor, 8));
     Settings.WriteString('OutlineColor', inttohex(OSDForm.OutlineColor, 8));
     Settings.WriteInteger('OutlineWidth', OSDForm.OutlineWidth);
+    Settings.WriteBool('Sticky', cbSticky.checked);
     Settings.EndSection;
 
     Settings.BeginSection('AGTH');
@@ -261,6 +264,7 @@ begin
       inttohex(clBlack, 8)));
 
     OSDForm.OutlineWidth := Settings.ReadInteger('OutlineWidth', 1);
+    cbSticky.checked := Settings.ReadBool('Sticky', false);
     Settings.EndSection;
 
     tbOutline.Position := OSDForm.OutlineWidth;
@@ -439,6 +443,11 @@ begin
     OSDForm.Show
   else
     OSDForm.Hide;
+end;
+
+procedure TMainForm.cbStickyClick(Sender: TObject);
+begin
+  OSDForm.Sticky := cbSticky.checked;
 end;
 
 procedure TMainForm.cbProcessDrawItem(Control: TWinControl; Index: Integer;
