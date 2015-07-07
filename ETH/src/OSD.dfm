@@ -13,7 +13,6 @@ object OSDForm: TOSDForm
   Font.Style = []
   OldCreateOrder = True
   OnCreate = FormCreate
-  OnDestroy = FormDestroy
   OnResize = FormResize
   PixelsPerInch = 96
   TextHeight = 13

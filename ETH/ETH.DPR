@@ -11,7 +11,6 @@ uses
   Inject in 'src\Inject.pas',
   Pipe in 'src\Pipe.pas',
   AGTHConst in 'src\AGTHConst.pas',
-  TextRender in 'src\TextRender.pas',
   uSettings in 'src\uSettings.pas',
   jsCore in 'src\jsCore.pas',
   jsHighlighter in 'src\jsHighlighter.pas';
