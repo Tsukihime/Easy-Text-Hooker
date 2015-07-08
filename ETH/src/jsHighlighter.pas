@@ -14,7 +14,7 @@ type
   end;
 
 const
-  delimiters: string = ' ,(){}[]-+*%/="''~!&|<>?:;.' + #$D + #$A;
+  delimiters: string = ' ,(){}[]-+*%/="''~!&|<>?:;.' + #$9 + #$D + #$A;
 
   Reswords: array [0 .. 54] of string = ('abstract', 'boolean', 'break', 'byte',
     'case', 'catch', 'char', 'class', 'const', 'continue', 'default', 'delete',
