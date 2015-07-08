@@ -11,7 +11,7 @@ uses Vcl.Samples.Spin, Vcl.ImgList, Vcl.Controls, Vcl.StdCtrls, Vcl.Dialogs,
 
 type
   TMainForm = class(TForm)
-    Timer: TTimer;
+    OSDTimer: TTimer;
     FontDialog: TFontDialog;
     PageControl: TPageControl;
     TabSheet2: TTabSheet;
@@ -62,7 +62,7 @@ type
     js_preProcess: TTabSheet;
     Panel1: TPanel;
     btnScriptLoad: TButton;
-    OpenDialog1: TOpenDialog;
+    OpenDialog: TOpenDialog;
     chbTextProcessor: TCheckBox;
     ScriptArea: TRichEdit;
     mScriptPath: TMemo;
@@ -72,7 +72,7 @@ type
     Label3: TLabel;
     Label4: TLabel;
     cbSticky: TCheckBox;
-    procedure TimerTimer(Sender: TObject);
+    procedure OSDTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure FontSetClick(Sender: TObject);
@@ -90,6 +90,7 @@ type
     procedure tbOutlineChange(Sender: TObject);
     procedure btnScriptLoadClick(Sender: TObject);
     procedure cbStickyClick(Sender: TObject);
+    procedure cbProcessChange(Sender: TObject);
   private
     procedure OnNewStream(lines: TStrings);
     procedure OnNewText(Text: widestring);
@@ -264,7 +265,7 @@ begin
       inttohex(clBlack, 8)));
 
     OSDForm.OutlineWidth := Settings.ReadInteger('OutlineWidth', 1);
-    cbSticky.checked := Settings.ReadBool('Sticky', false);
+    cbSticky.checked := Settings.ReadBool('Sticky', False);
     Settings.EndSection;
 
     tbOutline.Position := OSDForm.OutlineWidth;
@@ -318,7 +319,7 @@ begin
   Application.OnActivate := ApplicationFocusChanged;
 end;
 
-procedure TMainForm.TimerTimer(Sender: TObject);
+procedure TMainForm.OSDTimerTimer(Sender: TObject);
 begin
   try
     if rbClipboard.checked then
@@ -403,15 +404,16 @@ end;
 
 procedure TMainForm.btnHookClick(Sender: TObject);
 var
-  pid: cardinal;
+  pid: Cardinal;
   idx: Integer;
 begin
   idx := cbProcess.ItemIndex;
   if (idx >= 0) and (idx < cbProcess.Items.Count) then
   begin
-    pid := cardinal(cbProcess.Items.Objects[cbProcess.ItemIndex]);
+    pid := Cardinal(cbProcess.Items.Objects[cbProcess.ItemIndex]);
     THooker.HookProcess(pid, edHCode.Text);
   end;
+  cbProcessChange(cbProcess);
 end;
 
 procedure TMainForm.btnOsdFontSelectClick(Sender: TObject);
@@ -423,10 +425,10 @@ end;
 
 procedure TMainForm.btnScriptLoadClick(Sender: TObject);
 begin
-  OpenDialog1.Filter := '*.js|*.js';
-  OpenDialog1.InitialDir := ExtractFilePath(paramstr(0));
-  if OpenDialog1.Execute(Self.Handle) then
-    LoadScript(OpenDialog1.FileName);
+  OpenDialog.Filter := '*.js|*.js';
+  OpenDialog.InitialDir := ExtractFilePath(paramstr(0));
+  if OpenDialog.Execute(Self.Handle) then
+    LoadScript(OpenDialog.FileName);
 end;
 
 procedure TMainForm.LoadScript(path: string);
@@ -448,6 +450,16 @@ end;
 procedure TMainForm.cbStickyClick(Sender: TObject);
 begin
   OSDForm.Sticky := cbSticky.checked;
+end;
+
+procedure TMainForm.cbProcessChange(Sender: TObject);
+var
+  itindex: Integer;
+  pid: Cardinal;
+begin
+  itindex := cbProcess.ItemIndex;
+  pid := Cardinal(cbProcess.Items.Objects[itindex]);
+  btnHook.Enabled := not THooker.IsHooked(pid);
 end;
 
 procedure TMainForm.cbProcessDrawItem(Control: TWinControl; Index: Integer;
@@ -479,7 +491,7 @@ procedure TMainForm.cbProcessDropDown(Sender: TObject);
 var
   itindex: Integer;
   i: Integer;
-  pid: cardinal;
+  pid: Cardinal;
   proc: THandle;
   buffer: array [0 .. MAX_PATH] of WideChar;
   res: Integer;
@@ -493,7 +505,7 @@ begin
   begin
     FillChar(buffer, MAX_PATH, 0);
 
-    pid := cardinal(cbProcess.Items.Objects[i]);
+    pid := Cardinal(cbProcess.Items.Objects[i]);
     proc := OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ,
       False, pid);
 

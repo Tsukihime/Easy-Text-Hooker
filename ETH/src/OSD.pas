@@ -33,9 +33,6 @@ type
     procedure SetFont(Font: TFont);
     procedure SetOutlineColor(const Value: TColor);
     procedure setOutlineWidth(const Value: Integer);
-    function GetOutlineColor: TColor;
-    function GetOutlineWidth: Integer;
-    function GetTextColor: TColor;
     procedure SetDrawWindowOutline(const Value: boolean);
     function BGR2ARGB(col: TColor): TColor;
     function FontStyle2GPFontStyle(Style: TFontStyles): Integer;
@@ -44,10 +41,10 @@ type
     procedure SetText(Text: widestring);
     procedure SetPosition(X, Y, Width, Height: Integer);
 
-    property TextColor: TColor read GetTextColor write SetTextColor;
-    property OutlineColor: TColor read GetOutlineColor write SetOutlineColor;
+    property TextColor: TColor read FTextColor write SetTextColor;
+    property OutlineColor: TColor read FOutlineColor write SetOutlineColor;
     property TextFont: TFont read GetFont write SetFont;
-    property OutlineWidth: Integer read GetOutlineWidth write setOutlineWidth;
+    property OutlineWidth: Integer read FOutlineWidth write setOutlineWidth;
     property DrawWindowOutline: boolean read FDrawWindowOutline
       write SetDrawWindowOutline;
     property Sticky: boolean read FSticky write SetSticky;
@@ -241,21 +238,6 @@ end;
 function TOSDForm.GetFont: TFont;
 begin
   Result := self.Font;
-end;
-
-function TOSDForm.GetOutlineColor: TColor;
-begin
-  Result := FOutlineColor;
-end;
-
-function TOSDForm.GetOutlineWidth: Integer;
-begin
-  Result := FOutlineWidth;
-end;
-
-function TOSDForm.GetTextColor: TColor;
-begin
-  Result := FTextColor;
 end;
 
 procedure TOSDForm.SetPosition(X, Y, Width, Height: Integer);

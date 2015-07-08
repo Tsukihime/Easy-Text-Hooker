@@ -12,7 +12,9 @@ type
   THooker = class
   public
     class procedure GetProcessList(List: TStrings);
-    class procedure HookProcess(processId: Cardinal; AGTHCommandLine: string);
+    class function HookProcess(processId: Cardinal;
+      AGTHCommandLine: string): boolean;
+    class function IsHooked(processId: Cardinal): boolean;
   private
     class function GenerateHCode(AGTHcmd: string): string;
     class function InjectDll(Process: DWORD;
@@ -58,6 +60,9 @@ const // asm cmd
   CALL_DWORD_PTR: WORD = $15FF;
   INT3: BYTE = $CC;
   NOP: BYTE = $90;
+
+const
+  INTERCEPT_MODULE_NAME: string = 'agth.dll';
 
 implementation
 
@@ -134,6 +139,31 @@ begin
   Result := true;
 end;
 
+class function THooker.IsHooked(processId: Cardinal): boolean;
+var
+  ContinueLoop: BOOL;
+  SnapshotHandle: THandle;
+  ModuleEntry32: TModuleEntry32;
+  ModuleName: string;
+begin
+  Result := false;
+  SnapshotHandle := CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, processId);
+  ModuleEntry32.dwSize := sizeof(ModuleEntry32);
+  ContinueLoop := Module32First(SnapshotHandle, ModuleEntry32);
+  while Integer(ContinueLoop) <> 0 do
+  begin
+    ModuleName := ModuleEntry32.szModule;
+    ModuleName := LowerCase(ModuleName);
+    if ModuleName = INTERCEPT_MODULE_NAME then
+    begin
+      Result := true;
+      break;
+    end;
+    ContinueLoop := Module32Next(SnapshotHandle, ModuleEntry32);
+  end;
+  CloseHandle(SnapshotHandle);
+end;
+
 class procedure THooker.GetProcessList(List: TStrings);
 var
   ContinueLoop: BOOL;
@@ -160,7 +190,7 @@ var
   lcmd, uFlag, sFlag: string;
   flags: BYTE;
 begin
-  lcmd := lowercase(AGTHcmd);
+  lcmd := LowerCase(AGTHcmd);
   flags := 0;
 
   if pos('/nh', lcmd) > 0 then
@@ -210,13 +240,14 @@ begin
   Result := IntToHex(flags, 1) + sFlag + uFlag;
 end;
 
-class procedure THooker.HookProcess(processId: Cardinal;
-  AGTHCommandLine: string);
+class function THooker.HookProcess(processId: Cardinal;
+  AGTHCommandLine: string): boolean;
 var
   HCode: string;
   pHwnd: THandle;
   ModPath: string;
 begin
+  Result := false;
   HCode := GenerateHCode(AGTHCommandLine);
 
   pHwnd := OpenProcess(PROCESS_CREATE_THREAD or PROCESS_VM_OPERATION or
@@ -225,8 +256,8 @@ begin
 
   if pHwnd <> 0 then
   begin
-    ModPath := ExtractFilePath(paramstr(0)) + 'agth.dll';
-    InjectDll(pHwnd, ModPath, HCode);
+    ModPath := ExtractFilePath(paramstr(0)) + INTERCEPT_MODULE_NAME;
+    Result := InjectDll(pHwnd, ModPath, HCode);
     CloseHandle(pHwnd);
   end;
 end;

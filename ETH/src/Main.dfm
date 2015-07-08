@@ -60,10 +60,9 @@
         object Label7: TLabel
           Left = 3
           Top = 6
-          Width = 45
+          Width = 41
           Height = 13
-          Hint = 'Process:'
-          Caption = #1055#1088#1086#1094#1077#1089#1089':'
+          Caption = 'Process:'
         end
         object Label8: TLabel
           Left = 3
@@ -75,13 +74,12 @@
         object Label12: TLabel
           Left = 3
           Top = 59
-          Width = 111
+          Width = 64
           Height = 13
-          Hint = 'Copy to clipboard after'
-          Caption = 'Copy to clipboard after'
+          Caption = 'End line after'
         end
         object Label13: TLabel
-          Left = 172
+          Left = 125
           Top = 59
           Width = 13
           Height = 13
@@ -95,6 +93,7 @@
           Style = csOwnerDrawFixed
           Sorted = True
           TabOrder = 0
+          OnChange = cbProcessChange
           OnDrawItem = cbProcessDrawItem
           OnDropDown = cbProcessDropDown
         end
@@ -115,7 +114,7 @@
           OnClick = btnHookClick
         end
         object seDelay: TSpinEdit
-          Left = 120
+          Left = 73
           Top = 56
           Width = 46
           Height = 22
@@ -130,10 +129,6 @@
     object js_preProcess: TTabSheet
       Caption = 'Text processor >'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Panel1: TPanel
         Left = 0
         Top = 0
@@ -204,10 +199,6 @@
     object TabSheet5: TTabSheet
       Caption = 'GoogleTranslate >'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox1: TGroupBox
         Left = 0
         Top = 0
@@ -274,10 +265,6 @@
     object TabSheet4: TTabSheet
       Caption = 'OSD'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox3: TGroupBox
         Left = 3
         Top = 3
@@ -425,7 +412,6 @@
         Top = -3
         Width = 170
         Height = 124
-        Hint = 'Font'
         Caption = #1064#1088#1080#1092#1090
         TabOrder = 2
         object Label14: TLabel
@@ -501,10 +487,6 @@
       ImageIndex = 1
       ParentShowHint = False
       ShowHint = True
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object Memo: TMemo
         Left = 0
         Top = 28
@@ -560,9 +542,9 @@
       end
     end
   end
-  object Timer: TTimer
+  object OSDTimer: TTimer
     Interval = 100
-    OnTimer = TimerTimer
+    OnTimer = OSDTimerTimer
     Left = 112
     Top = 112
   end
@@ -729,7 +711,7 @@
     Left = 144
     Top = 112
   end
-  object OpenDialog1: TOpenDialog
+  object OpenDialog: TOpenDialog
     Left = 176
     Top = 112
   end
