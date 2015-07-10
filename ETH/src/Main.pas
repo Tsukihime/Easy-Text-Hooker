@@ -106,10 +106,7 @@ type
     agserv: TAGTHServer;
     jstp: JavaScriptTextProcessor;
   protected
-    procedure CreateParams(var Params: TCreateParams); override;
     procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
-    procedure WMActivate(var Message: TWMActivate); message WM_ACTIVATE;
-    procedure ApplicationFocusChanged(Sender: TObject);
   end;
 
 var
@@ -123,25 +120,6 @@ uses psapi, shellapi, CLIPBRD, SysUtils, Windows,
   OSD, Inject, GoogleTranslate, uSettings;
 
 {$R *.dfm}
-
-// http://www.transl-gunsmoker.ru/2009/03/windows-vista-delphi-1.html?m=1
-// http://www.transl-gunsmoker.ru/2009/03/windows-vista-delphi-2.html?m=1
-procedure TMainForm.CreateParams(var Params: TCreateParams);
-begin
-  inherited CreateParams(Params);
-  Params.ExStyle := Params.ExStyle and not WS_EX_TOOLWINDOW or WS_EX_APPWINDOW;
-end;
-
-procedure TMainForm.WMActivate(var Message: TWMActivate);
-begin
-  if (message.Active = WA_ACTIVE) and not IsWindowEnabled(Handle) then
-  begin
-    SetActiveWindow(Application.Handle);
-    message.Result := 0;
-  end
-  else
-    inherited;
-end;
 
 procedure TMainForm.WMSyscommand(var Message: TWmSysCommand);
 begin
@@ -160,8 +138,6 @@ begin
     inherited;
   end;
 end;
-// ^^
-
 procedure TMainForm.SaveSettings;
 var
   Settings: TSettingsFile;
@@ -286,8 +262,6 @@ end;
 
 procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Application.OnDeactivate := nil;
-  Application.OnActivate := nil;
   agserv.Free;
   SaveSettings;
   jstp.Free;
@@ -315,8 +289,6 @@ begin
 
   LoadSettings;
   UpdateColorBoxes;
-  Application.OnDeactivate := ApplicationFocusChanged;
-  Application.OnActivate := ApplicationFocusChanged;
 end;
 
 procedure TMainForm.OSDTimerTimer(Sender: TObject);
@@ -395,11 +367,6 @@ function TMainForm.Translate(Text: widestring): widestring;
 begin
   Result := TGoogleTranslate.Translate(Text, srclen.ItemIndex,
     destlen.ItemIndex);
-end;
-
-procedure TMainForm.ApplicationFocusChanged(Sender: TObject);
-begin
-  OSDForm.DrawWindowOutline := Application.Active;
 end;
 
 procedure TMainForm.btnHookClick(Sender: TObject);

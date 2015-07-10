@@ -19,14 +19,9 @@ uses
 
 begin
   Application.Initialize;
+  Application.MainFormOnTaskbar := True;
   Application.Title := 'Easy Text Hooker';
   Application.CreateForm(TMainForm, MainForm);
-  ShowWindow(Application.Handle, SW_HIDE);
-  SetWindowLong(Application.Handle, GWL_EXSTYLE,
-    GetWindowLong(Application.Handle, GWL_EXSTYLE) and not WS_EX_APPWINDOW or
-    WS_EX_TOOLWINDOW);
-  ShowWindow(Application.Handle, SW_SHOW);
-
   Application.Run;
 
 end.

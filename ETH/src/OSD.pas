@@ -207,8 +207,11 @@ end;
 
 procedure TOSDForm.SetDrawWindowOutline(const Value: boolean);
 begin
-  FDrawWindowOutline := Value;
-  RepaintWindow;
+  if FDrawWindowOutline <> Value then
+  begin
+    FDrawWindowOutline := Value;
+    RepaintWindow;
+  end;
 end;
 
 procedure TOSDForm.SetFont(Font: TFont);
@@ -272,6 +275,9 @@ begin
   if Sticky then
   begin
     HWnd := GetForegroundWindow();
+
+    DrawWindowOutline := (HWnd = Application.MainForm.Handle);
+
     if (HWnd <> 0) and (HWnd <> self.Handle) and
       (HWnd <> Application.MainForm.Handle) then
     begin
