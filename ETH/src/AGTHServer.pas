@@ -2,101 +2,71 @@
 
 interface
 
-uses PipeServer, Classes, Windows, SysUtils,
-  System.Generics.Collections, ExtCtrls, AGTHConst;
+uses
+  PipeServer,
+  Classes,
+  System.Generics.Collections,
+  ExtCtrls,
+  AGTHConst,
+  TextStream;
 
 type
-  TTextStream = class
-  private
-    Text: TStringList;
-    LastTime: Cardinal;
-    LagTime: Cardinal;
-
-    Context: Cardinal;
-    Subcontext: Cardinal;
-    ProcessID: Cardinal;
-    HookName: ansistring;
-    FTmrInterval: Cardinal;
-    newText: boolean;
-    Buffer: TStringBuilder;
-    procedure NewStr;
-  public
-    constructor Create(const pckt: TAGTHRcPckt);
-    destructor Destroy; override;
-    function Compare(const pckt: TAGTHRcPckt): boolean;
-    procedure Add(const pckt: TAGTHRcPckt);
-    function StreamID: string;
-    function GetText(var Text: WideString): boolean;
-    procedure GetStreamText(lines: TStrings);
-    property TmrInterval: Cardinal read FTmrInterval write FTmrInterval;
-  end;
-
-  TStreamEvent = procedure(lines: TStrings) of object;
+  TNewStreamEvent = procedure(Lines: TStrings) of object;
   TTextEvent = procedure(Text: WideString) of object;
 
   TAGTHServer = class
     constructor Create;
     destructor Destroy; override;
   private
-    pps: TPipeServer;
-    TextStreams: TObjectList<TTextStream>;
-    Tmr: TTimer;
-    TmrInterval: Integer;
-    CurrentStream: Integer;
+    FPipeServer: TPipeServer;
+    FTextStreams: TObjectList<TTextStream>;
+    FTimer: TTimer;
+    FEndLineDelay: Integer;
+    FCurrentStream: Integer;
 
-    FStreamEvent: TStreamEvent;
-    FOnText: TTextEvent;
+    FOnNewStreamEvent: TNewStreamEvent;
+    FOnNewText: TTextEvent;
 
-    procedure TextEvent(Text: WideString);
-    procedure StreamEvent(lines: TStrings);
+    procedure DoNewText(Text: WideString);
+    procedure DoNewStream(Lines: TStrings);
 
     procedure OnRecieve(hPipe: THandle; data: TAGTHRcPckt);
-    function GetDelay: Integer;
-    procedure SetDelay(const Value: Integer);
+    procedure SetEndLineDelay(const Value: Integer);
     procedure OnTimer(Sender: TObject);
   public
     procedure SelectStream(index: Integer);
     procedure GetStreams(StreamList: TStrings);
-    procedure GetStreamText(lines: TStrings);
-    property CopyDelay: Integer read GetDelay write SetDelay;
-    property OnStream: TStreamEvent read FStreamEvent write FStreamEvent;
-    property OnText: TTextEvent read FOnText write FOnText;
+    procedure GetStreamText(Lines: TStrings);
+    property EndLineDelay: Integer read FEndLineDelay write SetEndLineDelay;
+    property OnNewStream: TNewStreamEvent read FOnNewStreamEvent
+      write FOnNewStreamEvent;
+    property OnNewText: TTextEvent read FOnNewText write FOnNewText;
   end;
-
-const
-  MAX_STR_CAPACITY = 64;
 
 implementation
 
-uses main;
 { TAGTHServer }
 
 constructor TAGTHServer.Create;
 begin
-  TextStreams := TObjectList<TTextStream>.Create(true);
-  Tmr := TTimer.Create(nil);
-  Tmr.OnTimer := OnTimer;
-  TmrInterval := 150;
-  Tmr.Interval := TmrInterval;
-  Tmr.Enabled := true;
-  CurrentStream := 0;
+  FTextStreams := TObjectList<TTextStream>.Create(true);
+  FTimer := TTimer.Create(nil);
+  FTimer.OnTimer := OnTimer;
+  EndLineDelay := 150;
+  FTimer.Enabled := true;
+  FCurrentStream := 0;
 
-  pps := TPipeServer.Create;
-  pps.OnReceive := OnRecieve;
-  pps.Start;
+  FPipeServer := TPipeServer.Create;
+  FPipeServer.OnReceive := OnRecieve;
+  FPipeServer.Start;
 end;
 
 destructor TAGTHServer.Destroy;
 begin
-  Tmr.Free;
-  pps.Free;
-  TextStreams.Free;
+  FTimer.Free;
+  FPipeServer.Free;
+  FTextStreams.Free;
   inherited;
-end;
-
-function TAGTHServer.GetDelay: Integer;
-begin
-  Result := TmrInterval;
 end;
 
 procedure TAGTHServer.GetStreams(StreamList: TStrings);
@@ -104,153 +74,73 @@ var
   i: Integer;
 begin
   StreamList.Clear;
-  for i := 0 to TextStreams.Count - 1 do
-    StreamList.Add(TextStreams[i].StreamID);
+  for i := 0 to FTextStreams.Count - 1 do
+    StreamList.Add(FTextStreams[i].StreamID);
 end;
 
-procedure TAGTHServer.GetStreamText(lines: TStrings);
+procedure TAGTHServer.GetStreamText(Lines: TStrings);
 begin
-  if (CurrentStream >= 0) and (CurrentStream < TextStreams.Count) then
-    TextStreams[CurrentStream].GetStreamText(lines);
+  if (FCurrentStream >= 0) and (FCurrentStream < FTextStreams.Count) then
+    FTextStreams[FCurrentStream].GetStreamText(Lines);
 end;
 
 procedure TAGTHServer.SelectStream(index: Integer);
 begin
-  CurrentStream := index;
+  FCurrentStream := index;
 end;
 
-procedure TAGTHServer.SetDelay(const Value: Integer);
+procedure TAGTHServer.SetEndLineDelay(const Value: Integer);
 var
   i: Integer;
 begin
-  TmrInterval := Value;
-  for i := 0 to TextStreams.Count - 1 do
-    TextStreams[i].TmrInterval := TmrInterval;
-  Tmr.Interval := TmrInterval;
+  FEndLineDelay := Value;
+  for i := 0 to FTextStreams.Count - 1 do
+    FTextStreams[i].EndLineDelay := EndLineDelay;
+  FTimer.Interval := EndLineDelay;
 end;
 
-procedure TAGTHServer.StreamEvent(lines: TStrings);
+procedure TAGTHServer.DoNewStream(Lines: TStrings);
 begin
-  TThread.Synchronize(TThread.CurrentThread,
-    procedure
-    begin
-      if Assigned(FStreamEvent) then
-        FStreamEvent(lines);
-    end);
+  if Assigned(FOnNewStreamEvent) then
+    FOnNewStreamEvent(Lines);
 end;
 
 procedure TAGTHServer.OnRecieve(hPipe: THandle; data: TAGTHRcPckt);
 var
   i: Integer;
-  ts: TTextStream;
-  ln: TStringList;
+  TextStream: TTextStream;
+  Streams: TStringList;
 begin
-  for i := 0 to TextStreams.Count - 1 do
-    if TextStreams[i].Compare(data) then
+  for i := 0 to FTextStreams.Count - 1 do
+    if FTextStreams[i].Compare(data) then
     begin
-      TextStreams[i].Add(data);
+      FTextStreams[i].Add(data);
       exit;
     end;
 
-  ts := TTextStream.Create(data);
-  ts.TmrInterval := TmrInterval;
-  TextStreams.Add(ts);
+  TextStream := TTextStream.Create(data);
+  TextStream.EndLineDelay := EndLineDelay;
+  FTextStreams.Add(TextStream);
 
-  ln := TStringList.Create;
-  GetStreams(ln);
-  StreamEvent(ln);
-  ln.Free;
+  Streams := TStringList.Create;
+  GetStreams(Streams);
+  DoNewStream(Streams);
+  Streams.Free;
 end;
 
 procedure TAGTHServer.OnTimer(Sender: TObject);
 var
   str: WideString;
 begin
-  if (CurrentStream >= 0) and (CurrentStream < TextStreams.Count) then
-    if TextStreams[CurrentStream].GetText(str) then
-      TextEvent(str);
+  if (FCurrentStream >= 0) and (FCurrentStream < FTextStreams.Count) then
+    if FTextStreams[FCurrentStream].GetText(str) then
+      DoNewText(str);
 end;
 
-procedure TAGTHServer.TextEvent(Text: WideString);
+procedure TAGTHServer.DoNewText(Text: WideString);
 begin
-  if Assigned(FOnText) then
-    FOnText(Text);
-end;
-
-{ TTextStream }
-
-procedure TTextStream.Add(const pckt: TAGTHRcPckt);
-begin
-  newText := true;
-  if pckt.UpTime - LastTime > FTmrInterval then
-    NewStr;
-  LastTime := pckt.UpTime;
-  LagTime := GetTickCount - LastTime;
-  Buffer.Append(copy(pckt.Text, 1, pckt.TextLength));
-end;
-
-procedure TTextStream.NewStr;
-begin
-  Text.Add(Buffer.ToString);
-  Buffer.Clear;
-  if Text.Count > MAX_STR_CAPACITY then
-    Text.Delete(0);
-end;
-
-function TTextStream.Compare(const pckt: TAGTHRcPckt): boolean;
-var
-  str: ansistring;
-begin
-  str := pckt.HookName;
-  Result := (Context = pckt.Context) and (Subcontext = pckt.Subcontext) and
-    (ProcessID = pckt.ProcessID) and (HookName = str);
-end;
-
-constructor TTextStream.Create(const pckt: TAGTHRcPckt);
-begin
-  Buffer := TStringBuilder.Create;
-  Text := TStringList.Create;
-  Text.Add('');
-  Context := pckt.Context;
-  Subcontext := pckt.Subcontext;
-  ProcessID := pckt.ProcessID;
-  HookName := pckt.HookName;
-  FTmrInterval := 150;
-  Add(pckt);
-end;
-
-destructor TTextStream.Destroy;
-begin
-  Buffer.Free;
-  Text.Free;
-  inherited;
-end;
-
-procedure TTextStream.GetStreamText(lines: TStrings);
-begin
-  lines.Clear;
-  lines.Assign(Text);
-end;
-
-function TTextStream.GetText(var Text: WideString): boolean;
-var
-  CurTime: Cardinal;
-begin
-  Result := false;
-  CurTime := GetTickCount;
-  if (CurTime - LagTime - LastTime > FTmrInterval) and newText then
-  begin
-    NewStr;
-    Text := self.Text.Strings[self.Text.Count - 1];
-    newText := false;
-    Result := true;
-  end;
-end;
-
-function TTextStream.StreamID: string;
-begin
-  Result := '0x' + IntToHex(Context, 8) + ':' + IntToHex(Subcontext, 8) + '   '
-    + string(HookName);
+  if Assigned(FOnNewText) then
+    FOnNewText(Text);
 end;
 
 end.

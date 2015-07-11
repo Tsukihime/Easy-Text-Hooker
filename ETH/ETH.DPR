@@ -13,7 +13,8 @@ uses
   AGTHConst in 'src\AGTHConst.pas',
   uSettings in 'src\uSettings.pas',
   jsCore in 'src\jsCore.pas',
-  jsHighlighter in 'src\jsHighlighter.pas';
+  jsHighlighter in 'src\jsHighlighter.pas',
+  TextStream in 'src\TextStream.pas';
 
 {$R *.res}
 

@@ -275,9 +275,9 @@ begin
   jstp := JavaScriptTextProcessor.Create;
   OSDForm := TOSDForm.Create(nil);
   agserv := TAGTHServer.Create;
-  agserv.OnStream := OnNewStream;
-  agserv.OnText := OnNewText;
-  agserv.CopyDelay := 200;
+  agserv.OnNewStream := OnNewStream;
+  agserv.OnNewText := OnNewText;
+  agserv.EndLineDelay := 200;
 
   srclen.Clear;
   destlen.Clear;
@@ -348,7 +348,7 @@ end;
 
 procedure TMainForm.seDelayChange(Sender: TObject);
 begin
-  agserv.CopyDelay := seDelay.Value;
+  agserv.EndLineDelay := seDelay.Value;
 end;
 
 procedure TMainForm.tbOutlineChange(Sender: TObject);
