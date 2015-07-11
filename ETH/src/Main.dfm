@@ -7,15 +7,15 @@
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'Tahoma'
+  Font.Height = -12
+  Font.Name = 'Segoe UI'
   Font.Style = []
   OldCreateOrder = False
   Position = poDesktopCenter
   OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 15
   object PageControl: TPageControl
     Left = 0
     Top = 0
@@ -60,29 +60,29 @@
         object Label7: TLabel
           Left = 3
           Top = 6
-          Width = 41
-          Height = 13
+          Width = 43
+          Height = 15
           Caption = 'Process:'
         end
         object Label8: TLabel
           Left = 3
           Top = 33
-          Width = 36
-          Height = 13
+          Width = 40
+          Height = 15
           Caption = 'HCode:'
         end
         object Label12: TLabel
           Left = 3
           Top = 59
-          Width = 64
-          Height = 13
+          Width = 69
+          Height = 15
           Caption = 'End line after'
         end
         object Label13: TLabel
-          Left = 125
+          Left = 130
           Top = 59
-          Width = 13
-          Height = 13
+          Width = 16
+          Height = 15
           Caption = 'ms'
         end
         object cbProcess: TComboBox
@@ -114,10 +114,10 @@
           OnClick = btnHookClick
         end
         object seDelay: TSpinEdit
-          Left = 73
+          Left = 78
           Top = 56
           Width = 46
-          Height = 22
+          Height = 24
           MaxValue = 0
           MinValue = 0
           TabOrder = 3
@@ -210,29 +210,29 @@
         object Label1: TLabel
           Left = 7
           Top = 26
-          Width = 123
-          Height = 13
+          Width = 131
+          Height = 15
           Hint = 'Translate into'
           Caption = #1053#1072#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1087#1077#1088#1077#1074#1086#1076#1072':'
         end
         object Label3: TLabel
-          Left = 3
+          Left = 7
           Top = 50
-          Width = 28
-          Height = 13
+          Width = 31
+          Height = 15
           Caption = 'From:'
         end
         object Label4: TLabel
-          Left = 3
+          Left = 7
           Top = 77
-          Width = 16
-          Height = 13
+          Width = 17
+          Height = 15
           Caption = 'To:'
         end
         object DoTranslate: TCheckBox
           Left = 7
           Top = 3
-          Width = 105
+          Width = 122
           Height = 17
           Hint = 'Enable Online Translate'
           ParentCustomHint = False
@@ -242,20 +242,20 @@
           TabOrder = 0
         end
         object srclen: TComboBox
-          Left = 35
+          Left = 42
           Top = 47
           Width = 145
-          Height = 21
+          Height = 23
           Hint = 'Source language'
           HelpType = htKeyword
           Style = csDropDownList
           TabOrder = 1
         end
         object destlen: TComboBox
-          Left = 35
+          Left = 42
           Top = 74
           Width = 145
-          Height = 21
+          Height = 23
           Hint = 'Destination language'
           Style = csDropDownList
           TabOrder = 2
@@ -274,7 +274,7 @@
         object rbClipboard: TRadioButton
           Left = 8
           Top = 51
-          Width = 113
+          Width = 131
           Height = 17
           Hint = 'from clipboard'
           Caption = #1048#1079' '#1073#1091#1092#1077#1088#1072' '#1086#1073#1084#1077#1085#1072
@@ -314,35 +314,35 @@
           Left = 11
           Top = 21
           Width = 10
-          Height = 13
+          Height = 15
           Caption = 'X:'
         end
         object Label9: TLabel
           Left = 11
           Top = 40
           Width = 10
-          Height = 13
+          Height = 15
           Caption = 'Y:'
         end
         object Label10: TLabel
           Left = 11
           Top = 59
-          Width = 44
-          Height = 13
+          Width = 48
+          Height = 15
           Hint = 'Width:'
           Caption = #1064#1080#1088#1080#1085#1072':'
         end
         object Label11: TLabel
           Left = 11
           Top = 78
-          Width = 41
-          Height = 13
+          Width = 43
+          Height = 15
           Hint = 'Height:'
           Caption = #1042#1099#1089#1086#1090#1072':'
         end
         object tbX: TTrackBar
           Left = 61
-          Top = 18
+          Top = 21
           Width = 177
           Height = 16
           Max = 100
@@ -356,7 +356,7 @@
         end
         object tbY: TTrackBar
           Left = 61
-          Top = 37
+          Top = 40
           Width = 177
           Height = 16
           Max = 100
@@ -370,7 +370,7 @@
         end
         object tbWidth: TTrackBar
           Left = 61
-          Top = 56
+          Top = 59
           Width = 177
           Height = 16
           Max = 100
@@ -384,7 +384,7 @@
         end
         object tbHeight: TTrackBar
           Left = 61
-          Top = 75
+          Top = 78
           Width = 177
           Height = 16
           Max = 100
@@ -398,7 +398,7 @@
         end
         object cbSticky: TCheckBox
           Left = 11
-          Top = 97
+          Top = 100
           Width = 97
           Height = 17
           Hint = 'Sticky'
@@ -410,37 +410,37 @@
       object Шрифт: TGroupBox
         Left = 399
         Top = -3
-        Width = 170
+        Width = 178
         Height = 124
         Caption = #1064#1088#1080#1092#1090
         TabOrder = 2
         object Label14: TLabel
           Left = 11
-          Top = 49
-          Width = 68
-          Height = 13
+          Top = 46
+          Width = 66
+          Height = 15
           Hint = 'Font color:'
           Caption = #1062#1074#1077#1090' '#1090#1077#1082#1089#1090#1072':'
         end
         object Label15: TLabel
           Left = 11
-          Top = 77
-          Width = 76
-          Height = 13
+          Top = 74
+          Width = 78
+          Height = 15
           Hint = 'Outline color:'
           Caption = #1062#1074#1077#1090' '#1086#1073#1074#1086#1076#1082#1080':'
         end
         object imgTextColor: TImage
-          Left = 105
-          Top = 44
+          Left = 113
+          Top = 41
           Width = 55
           Height = 21
           Cursor = crHandPoint
           OnClick = imgTextColorClick
         end
         object imgOutlineColor: TImage
-          Left = 105
-          Top = 72
+          Left = 113
+          Top = 69
           Width = 55
           Height = 21
           Cursor = crHandPoint
@@ -448,9 +448,9 @@
         end
         object Label16: TLabel
           Left = 11
-          Top = 105
-          Width = 90
-          Height = 13
+          Top = 102
+          Width = 97
+          Height = 15
           Hint = 'Outline width:'
           Caption = #1064#1080#1088#1080#1085#1072' '#1086#1073#1074#1086#1076#1082#1080':'
         end
@@ -465,8 +465,8 @@
           OnClick = btnOsdFontSelectClick
         end
         object tbOutline: TTrackBar
-          Left = 99
-          Top = 103
+          Left = 107
+          Top = 100
           Width = 68
           Height = 16
           Max = 6
@@ -491,7 +491,7 @@
         Left = 0
         Top = 28
         Width = 675
-        Height = 96
+        Height = 94
         Align = alClient
         BevelInner = bvNone
         BevelOuter = bvNone
@@ -531,7 +531,7 @@
         object ClipboardCopy: TCheckBox
           Left = 8
           Top = 4
-          Width = 198
+          Width = 233
           Height = 17
           Hint = 'Copy text to clipboard'
           Caption = #1050#1086#1087#1080#1088#1086#1074#1072#1090#1100' '#1090#1077#1082#1089#1090' '#1074' '#1073#1091#1092#1077#1088' '#1086#1073#1084#1077#1085#1072
