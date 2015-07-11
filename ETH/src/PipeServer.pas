@@ -9,6 +9,11 @@ uses Classes, Windows, System.Generics.Collections,
 type
   TWOHandles = array [0 .. MAXIMUM_WAIT_OBJECTS - 1] of THandle;
 
+  TSyncPckt = packed record
+    hPipe: THandle;
+    Data: TAGTHRcPckt;
+  end;
+
   TOnConnectEvent = procedure(hPipe: THandle) of object;
   TOnDisconnectEvent = procedure(hPipe: THandle) of object;
   TOnReceiveEvent = procedure(hPipe: THandle; Data: TAGTHRcPckt) of object;
@@ -20,7 +25,6 @@ type
     FOnDisconnect: TOnDisconnectEvent;
 
     LastUpdateTime: Cardinal;
-    PcktBuffer: TThreadList;
 
     procedure DoConnect(hPipe: THandle);
     procedure DoDisconnect(hPipe: THandle);
@@ -39,19 +43,12 @@ type
     property OnReceive: TOnReceiveEvent read FOnReceive write FOnReceive;
   private
     IncomingPipe: TPipe;
-    Pipes: TObjectList<TPipe>;
+    Pipes: TObjectDictionary<THandle, TPipe>;
+    PacketQueue: TQueue<TSyncPckt>;
 
     function FillWOArray(var WOArr: TWOHandles): Cardinal;
-    function FindPipe(ev: THandle; var Pipe: TPipe): boolean;
     procedure ClosePipe(Pipe: TPipe);
   end;
-
-  TSyncPckt = packed record
-    hPipe: THandle;
-    Data: TAGTHRcPckt;
-  end;
-
-  PSyncPckt = ^TSyncPckt;
 
 const
   QueueUpdateInterval = 30;
@@ -63,10 +60,10 @@ implementation
 constructor TPipeServer.Create;
 begin
   inherited Create(true);
-  Pipes := TObjectList<TPipe>.Create(true);
+  Pipes := TObjectDictionary<THandle, TPipe>.Create([doOwnsValues]);
+  PacketQueue := TQueue<TSyncPckt>.Create;
   IncomingPipe := nil;
   LastUpdateTime := GetTickCount;
-  PcktBuffer := TThreadList.Create;
 
   FOnConnect := nil;
   FOnReceive := nil;
@@ -76,15 +73,13 @@ end;
 destructor TPipeServer.Destroy;
 begin
   Terminate;
-  WaitForSingleObject(Self.Handle, 2000);
+  WaitFor;
 
   Pipes.Free;
   if Assigned(IncomingPipe) then
     IncomingPipe.Free;
 
-  SyncQueue; // from main tread for clear queue
-  PcktBuffer.Free;
-
+  PacketQueue.Free;
   inherited;
 end;
 
@@ -110,24 +105,20 @@ end;
 
 procedure TPipeServer.DoReceive(hPipe: THandle; const Data: TAGTHRcPckt);
 var
-  pckt: PSyncPckt;
+  packet: TSyncPckt;
 begin
-  pckt := GetMemory(SizeOf(TSyncPckt));
-  Assert(pckt <> nil, 'TPipeServer.DoReceive: Memory allocation failed!');
-  pckt.hPipe := hPipe;
-  pckt.Data := Data;
-  PcktBuffer.Add(pckt);
+  packet.hPipe := hPipe;
+  packet.Data := Data;
+  PacketQueue.Enqueue(packet);
 end;
 
 procedure TPipeServer.UpdateQueue;
 var
   cnt: Integer;
 begin
-  if GetTickCount - LastUpdateTime > QueueUpdateInterval then
+  if abs(GetTickCount - LastUpdateTime) > QueueUpdateInterval then
   begin
-    cnt := PcktBuffer.LockList.Count;
-    PcktBuffer.UnlockList;
-    if cnt > 0 then
+    if PacketQueue.Count > 0 then
       Synchronize(SyncQueue);
     LastUpdateTime := GetTickCount;
   end;
@@ -135,29 +126,21 @@ end;
 
 procedure TPipeServer.SyncQueue; // main tread context
 var
-  lst: TList;
-  pckt: PSyncPckt;
+  packet: TSyncPckt;
 begin
-  lst := PcktBuffer.LockList;
-  try
-    while lst.Count > 0 do
-    begin
-      pckt := lst.First;
-      lst.Extract(pckt);
-
-      Assert(pckt <> nil, 'TPipeServer.SyncQueue: pckt == nil');
-      if Assigned(FOnReceive) then
-        FOnReceive(pckt.hPipe, pckt.Data);
-      FreeMemory(pckt);
-    end;
-  finally
-    PcktBuffer.UnlockList;
+  while PacketQueue.Count > 0 do
+  begin
+    // don't worry about PacketQueue, at this point owner thread is paused
+    packet := PacketQueue.Dequeue;
+    if Assigned(FOnReceive) then
+      FOnReceive(packet.hPipe, packet.Data);
   end;
 end;
 
 function TPipeServer.FillWOArray(var WOArr: TWOHandles): Cardinal;
 var
   i, psz: Integer;
+  pair: TPair<THandle, TPipe>;
 begin
   psz := Pipes.Count;
   if psz > MAXIMUM_WAIT_OBJECTS - 1 then
@@ -166,30 +149,15 @@ begin
   WOArr[0] := IncomingPipe.WaitEvent;
 
   for i := 0 to psz - 1 do
-    WOArr[i + 1] := Pipes[i].WaitEvent;
+    WOArr[i + 1] := Pipes.Keys.ToArray[i];
 
   Result := psz + 1;
 end;
 
-function TPipeServer.FindPipe(ev: THandle; var Pipe: TPipe): boolean;
-var
-  i: Integer;
-begin
-  Result := false;
-  for i := 0 to Pipes.Count - 1 do
-    if Pipes[i].WaitEvent = ev then
-    begin
-      Pipe := Pipes[i];
-      Result := true;
-      break;
-    end;
-end;
-
 procedure TPipeServer.ClosePipe(Pipe: TPipe);
 begin
-  Pipes.Extract(Pipe);
   DoDisconnect(Pipe.hPipe);
-  Pipe.Free;
+  Pipes.Remove(Pipe.WaitEvent);
 end;
 
 procedure TPipeServer.Execute;
@@ -215,7 +183,7 @@ begin
         begin // incoming connection
           DoConnect(IncomingPipe.hPipe);
 
-          Pipes.Add(IncomingPipe);
+          Pipes.Add(IncomingPipe.WaitEvent, IncomingPipe);
           IncomingPipe.Read;
 
           IncomingPipe := TPipe.Create;
@@ -227,7 +195,7 @@ begin
           WOIndex := WaitResult - WAIT_OBJECT_0;
           ev := WaitEvents[WOIndex];
 
-          if FindPipe(ev, Pipe) then
+          if Pipes.TryGetValue(ev, Pipe) then
             if not Pipe.Read then
               ClosePipe(Pipe);
         end;
@@ -237,7 +205,7 @@ begin
           WOIndex := WaitResult - WAIT_ABANDONED_0;
           ev := WaitEvents[WOIndex];
 
-          if FindPipe(ev, Pipe) then
+          if Pipes.TryGetValue(ev, Pipe) then
             ClosePipe(Pipe);
         end;
 
