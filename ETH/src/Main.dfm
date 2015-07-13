@@ -32,7 +32,7 @@
       DesignSize = (
         675
         124)
-      object Memo1: TMemo
+      object AGTHMemo: TMemo
         Left = 199
         Top = 30
         Width = 473

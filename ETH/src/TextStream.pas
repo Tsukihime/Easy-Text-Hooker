@@ -53,10 +53,13 @@ end;
 
 procedure TTextStream.NewStr;
 begin
-  FText.Add(FBuffer.ToString);
-  FBuffer.Clear;
-  if FText.Count > MAX_STR_CAPACITY then
-    FText.Delete(0);
+  if (FBuffer.Length > 0) then
+  begin
+    FText.Add(FBuffer.ToString);
+    FBuffer.Clear;
+    if FText.Count > MAX_STR_CAPACITY then
+      FText.Delete(0);
+  end;
 end;
 
 function TTextStream.Compare(const pckt: TAGTHRcPckt): boolean;
@@ -90,7 +93,6 @@ end;
 
 procedure TTextStream.GetStreamText(lines: TStrings);
 begin
-  lines.Clear;
   lines.Assign(FText);
 end;
 

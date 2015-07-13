@@ -18,7 +18,7 @@ type
     TabSheet3: TTabSheet;
     Memo: TMemo;
     TabSheet4: TTabSheet;
-    Memo1: TMemo;
+    AGTHMemo: TMemo;
     cbStreams: TComboBox;
     GroupBox2: TGroupBox;
     cbProcess: TComboBox;
@@ -138,6 +138,7 @@ begin
     inherited;
   end;
 end;
+
 procedure TMainForm.SaveSettings;
 var
   Settings: TSettingsFile;
@@ -507,9 +508,9 @@ end;
 procedure TMainForm.cbStreamsChange(Sender: TObject);
 begin
   agserv.SelectStream(cbStreams.ItemIndex);
-  agserv.GetStreamText(Memo1.lines);
-  Memo1.SelStart := Memo1.Perform(EM_LINEINDEX, Memo1.lines.Count, 0);
-  Memo1.Perform(EM_SCROLLCARET, 0, 0);
+  agserv.GetStreamText(AGTHMemo.lines);
+  AGTHMemo.SelStart := AGTHMemo.Perform(EM_LINEINDEX, AGTHMemo.lines.Count, 0);
+  AGTHMemo.Perform(EM_SCROLLCARET, 0, 0);
 end;
 
 procedure TMainForm.OnNewStream(lines: TStrings);
@@ -525,7 +526,9 @@ procedure TMainForm.OnNewText(Text: widestring);
 var
   s: string;
 begin
-  agserv.GetStreamText(Memo1.lines);
+  agserv.GetStreamText(AGTHMemo.lines);
+  AGTHMemo.SelStart := AGTHMemo.Perform(EM_LINEINDEX, AGTHMemo.lines.Count, 0);
+  AGTHMemo.Perform(EM_SCROLLCARET, 0, 0);
 
   if chbTextProcessor.checked then
     s := jstp.ProcessText(Text)
@@ -539,14 +542,13 @@ begin
     OSDForm.SetText(s);
 
   if ClipboardCopy.checked then
-    Clipboard.AsText := s;
+    try
+      Clipboard.AsText := s;
+    except
+      // what can i do?
+    end;
 
   Memo.Text := s;
-
-  // ----------------------------
-  agserv.GetStreamText(Memo1.lines);
-  Memo1.SelStart := Memo1.Perform(EM_LINEINDEX, Memo1.lines.Count, 0);
-  Memo1.Perform(EM_SCROLLCARET, 0, 0);
 end;
 
 end.
