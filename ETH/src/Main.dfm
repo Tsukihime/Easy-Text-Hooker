@@ -197,7 +197,7 @@
       end
     end
     object TabSheet5: TTabSheet
-      Caption = 'GoogleTranslate >'
+      Caption = 'Translate >'
       ImageIndex = 4
       object GroupBox1: TGroupBox
         Left = 0
@@ -250,6 +250,7 @@
           HelpType = htKeyword
           Style = csDropDownList
           TabOrder = 1
+          OnSelect = OnLangSelect
         end
         object destlen: TComboBox
           Left = 42
@@ -259,6 +260,7 @@
           Hint = 'Destination language'
           Style = csDropDownList
           TabOrder = 2
+          OnSelect = OnLangSelect
         end
       end
     end

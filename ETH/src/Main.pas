@@ -4,10 +4,12 @@ interface
 
 uses Vcl.Samples.Spin, Vcl.ImgList, Vcl.Controls, Vcl.StdCtrls, Vcl.Dialogs,
   Vcl.ExtCtrls, Vcl.ComCtrls, System.Classes, Forms, Types, Winapi.Messages,
+  System.Generics.Collections,
   //
   AGTHServer,
   jsCore,
-  jsHighlighter;
+  jsHighlighter,
+  Translator;
 
 type
   TMainForm = class(TForm)
@@ -91,20 +93,20 @@ type
     procedure btnScriptLoadClick(Sender: TObject);
     procedure cbStickyClick(Sender: TObject);
     procedure cbProcessChange(Sender: TObject);
+    procedure OnLangSelect(Sender: TObject);
   private
     procedure OnNewStream(lines: TStrings);
     procedure OnNewText(Text: widestring);
 
     procedure SaveSettings;
     procedure LoadSettings;
-
-    function Translate(Text: widestring): widestring;
     procedure UpdateColorBoxes;
 
     procedure LoadScript(path: string);
   private
     agserv: TAGTHServer;
     jstp: JavaScriptTextProcessor;
+    trans: TTranslator;
   protected
     procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
   end;
@@ -117,7 +119,11 @@ implementation
 uses psapi, shellapi, CLIPBRD, SysUtils, Windows,
   System.UITypes, Graphics,
   //
-  OSD, Inject, GoogleTranslate, uSettings;
+  OSD,
+  Inject,
+  GoogleTranslate,
+  YandexTranslate,
+  uSettings;
 
 {$R *.dfm}
 
@@ -156,7 +162,7 @@ begin
     Settings.WriteInteger('Style', Byte(Memo.Font.Style));
     Settings.EndSection;
 
-    Settings.BeginSection('GoogleTranslate');
+    Settings.BeginSection('Translate');
     Settings.WriteBool('DoTranslate', DoTranslate.checked);
     Settings.WriteInteger('SrcLang', srclen.ItemIndex);
     Settings.WriteInteger('DestLang', destlen.ItemIndex);
@@ -212,11 +218,12 @@ begin
     Memo.Font.Style := TFontStyles(Byte(Settings.ReadInteger('Font', 'Style',
       Byte(Memo.Font.Style))));
 
-    Settings.BeginSection('GoogleTranslate');
+    Settings.BeginSection('Translate');
     DoTranslate.checked := Settings.ReadBool('DoTranslate', False);
 
     srclen.ItemIndex := Settings.ReadInteger('SrcLang', 32);
     destlen.ItemIndex := Settings.ReadInteger('DestLang', 45);
+    OnLangSelect(srclen);
     Settings.EndSection;
 
     Settings.BeginSection('OSD');
@@ -263,6 +270,7 @@ end;
 
 procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
+  trans.Free;
   agserv.Free;
   SaveSettings;
   jstp.Free;
@@ -272,7 +280,20 @@ end;
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   i: Integer;
+  list: TList<string>;
+  s: string;
+  Settings: TSettingsFile;
+  YandexApiKey: string;
 begin
+  Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
+  try
+    Settings.BeginSection('Translate');
+    YandexApiKey := Settings.ReadString('YandexApiKey', '');
+  finally
+    Settings.Free;
+  end;
+  trans := TYandexTranslate.Create(YandexApiKey);
+
   jstp := JavaScriptTextProcessor.Create;
   OSDForm := TOSDForm.Create(nil);
   agserv := TAGTHServer.Create;
@@ -282,10 +303,17 @@ begin
 
   srclen.Clear;
   destlen.Clear;
-  for i := 0 to length(LangArr) - 1 do
-  begin
-    srclen.Items.Add(LangArr[i].Name);
-    destlen.Items.Add(LangArr[i].Name);
+
+  list := TList<string>.Create(trans.LangPairs.Keys);
+  try
+    list.Sort;
+    for s in list do
+    begin
+      srclen.Items.Append(s);
+      destlen.Items.Append(s);
+    end;
+  finally
+    list.Free;
   end;
 
   LoadSettings;
@@ -352,6 +380,11 @@ begin
   agserv.EndLineDelay := seDelay.Value;
 end;
 
+procedure TMainForm.OnLangSelect(Sender: TObject);
+begin
+  trans.SetTranslationDirection(srclen.Text, destlen.Text);
+end;
+
 procedure TMainForm.tbOutlineChange(Sender: TObject);
 begin
   OSDForm.OutlineWidth := tbOutline.Position;
@@ -362,12 +395,6 @@ begin
   FontDialog.Font := Memo.Font;
   if FontDialog.Execute then
     Memo.Font := FontDialog.Font;
-end;
-
-function TMainForm.Translate(Text: widestring): widestring;
-begin
-  Result := TGoogleTranslate.Translate(Text, srclen.ItemIndex,
-    destlen.ItemIndex);
 end;
 
 procedure TMainForm.btnHookClick(Sender: TObject);
@@ -535,8 +562,11 @@ begin
   else
     s := Text;
 
+  if s = '' then
+    exit;
+
   if DoTranslate.checked then
-    s := Translate(s);
+    s := trans.Translate(s);
 
   if (cbEnableOSD.checked) and (rbText.checked) then
     OSDForm.SetText(s);

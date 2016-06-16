@@ -8,75 +8,48 @@ uses
   DBXJSON,
   HTTPApp,
   IdSSLOpenSSL,
-  System.RegularExpressions;
+  System.RegularExpressions,
+  Translator;
 
 type
-  Langrec = record
-    langid: string;
-    name: string;
-  end;
-
-  TGoogleTranslate = class
+  TGoogleTranslate = class(TTranslator)
   private
-    function GTranslate(Text: widestring; srclang, destlang: Integer): string;
     function ExtractTranslation(json: string): string;
-    function HTTPGet(url: string): string;
     function URLEncode(const wstr: widestring): string;
     function MatchEvaluator(const Match: TMatch): string;
     function FixGoogleJSON(json: string): string;
+  private
+    FHttp: TidHttp;
   public
-    class function Translate(Text: widestring;
-      srclang, destlang: Integer): string;
+    function Translate(Text: string): string; override;
+    constructor Create;
+    destructor Destroy; override;
   end;
-
-var
-  LangArr: array [0 .. 58] of Langrec = ((langid: 'af'; name: 'Afrikaans'),
-    (langid: 'sq'; name: 'Albanian'), (langid: 'ar'; name: 'Arabic'),
-    (langid: 'hy'; name: 'Armenian'), (langid: 'az'; name: 'Azerbaijani'),
-    (langid: 'eu'; name: 'Basque'), (langid: 'be'; name: 'Belarusian'),
-    (langid: 'bg'; name: 'Bulgarian'), (langid: 'ca'; name: 'Catalan'),
-    (langid: 'zh-CN'; name: 'Chinese (Simplified)'), (langid: 'zh-TW';
-    name: 'Chinese (Traditional)'), (langid: 'hr'; name: 'Croatian'),
-    (langid: 'cs'; name: 'Czech'), (langid: 'da'; name: 'Danish'),
-    (langid: 'nl'; name: 'Dutch'), (langid: 'en'; name: 'English'),
-    (langid: 'et'; name: 'Estonian'), (langid: 'tl'; name: 'Filipino'),
-    (langid: 'fi'; name: 'Finnish'), (langid: 'fr'; name: 'French'),
-    (langid: 'gl'; name: 'Galician'), (langid: 'ka'; name: 'Georgian'),
-    (langid: 'de'; name: 'German'), (langid: 'el'; name: 'Greek'),
-    (langid: 'ht'; name: 'Haitian Creole'), (langid: 'iw'; name: 'Hebrew'),
-    (langid: 'hi'; name: 'Hindi'), (langid: 'hu'; name: 'Hungarian'),
-    (langid: 'is'; name: 'Icelandic'), (langid: 'id'; name: 'Indonesian'),
-    (langid: 'ga'; name: 'Irish'), (langid: 'it'; name: 'Italian'),
-    (langid: 'ja'; name: 'Japanese'), (langid: 'ko'; name: 'Korean'),
-    (langid: 'la'; name: 'Latin'), (langid: 'lv'; name: 'Latvian'),
-    (langid: 'lt'; name: 'Lithuanian'), (langid: 'mk'; name: 'Macedonian'),
-    (langid: 'ms'; name: 'Malay'), (langid: 'mt'; name: 'Maltese'),
-    (langid: 'no'; name: 'Norwegian'), (langid: 'fa'; name: 'Persian'),
-    (langid: 'pl'; name: 'Polish'), (langid: 'pt'; name: 'Portuguese'),
-    (langid: 'ro'; name: 'Romanian'), (langid: 'ru'; name: 'Russian'),
-    (langid: 'sr'; name: 'Serbian'), (langid: 'sk'; name: 'Slovak'),
-    (langid: 'sl'; name: 'Slovenian'), (langid: 'es'; name: 'Spanish'),
-    (langid: 'sw'; name: 'Swahili'), (langid: 'sv'; name: 'Swedish'),
-    (langid: 'th'; name: 'Thai'), (langid: 'tr'; name: 'Turkish'),
-    (langid: 'uk'; name: 'Ukrainian'), (langid: 'ur'; name: 'Urdu'),
-    (langid: 'vi'; name: 'Vietnamese'), (langid: 'cy'; name: 'Welsh'),
-    (langid: 'yi'; name: 'Yiddish'));
 
 implementation
 
 { TGoogleTranslate }
 
-class function TGoogleTranslate.Translate(Text: widestring;
-  srclang, destlang: Integer): string;
+function TGoogleTranslate.Translate(Text: string): string;
 var
-  gt: TGoogleTranslate;
+  response, url, srctext: string;
 begin
-  gt := TGoogleTranslate.Create;
+  srctext := URLEncode(Text);
+
+  url := Format
+    ('https://translate.google.com/translate_a/single?client=t&sl=%s&tl=%s&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&otf=1&ssel=0&tsel=0&kc=0&q=%s',
+    [FSrcLang, FDestLang, srctext]);
+
   try
-    Result := gt.GTranslate(Text, srclang, destlang);
-  finally
-    gt.Free;
+    response := FHttp.Get(url);
+  except
+    Result := Text;
+    exit;
   end;
+
+  Result := ExtractTranslation(FixGoogleJSON(response));
+  if Result = '' then
+    Result := Text;
 end;
 
 function TGoogleTranslate.URLEncode(const wstr: widestring): string;
@@ -93,27 +66,6 @@ begin
   Result := StringBuilder.ToString;
   StringBuilder.Free;
 end; // URLEncode
-
-function TGoogleTranslate.HTTPGet(url: string): string;
-var
-  http: TidHttp;
-begin
-  http := TidHttp.Create(nil);
-  try
-    http.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(http);
-    http.HandleRedirects := True;
-
-    http.Request.AcceptCharSet := 'utf-8';
-    http.Request.AcceptEncoding := 'utf-8';
-    http.Request.Referer := 'https://translate.google.com/';
-    http.Request.UserAgent :=
-      'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
-    // без рефера выдает кодировки отличные от utf-8
-    Result := http.Get(url);
-  finally
-    http.Free;
-  end;
-end;
 
 function TGoogleTranslate.MatchEvaluator(const Match: TMatch): string;
 begin
@@ -132,6 +84,85 @@ function TGoogleTranslate.FixGoogleJSON(json: string): string;
 begin
   Result := TRegEx.Replace(json, '(?<quoted>"(?:[^"\\]|\\.)*")|' +
     '(?<=[,\[])(?<left>,)|' + '(?<right>,)(?=[,\]])', MatchEvaluator);
+end;
+
+constructor TGoogleTranslate.Create;
+begin
+  inherited;
+  FHttp := TidHttp.Create(nil);
+  FHttp.IOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(FHttp);
+  FHttp.HandleRedirects := True;
+
+  FHttp.Request.AcceptCharSet := 'utf-8';
+  FHttp.Request.AcceptEncoding := 'utf-8';
+  FHttp.Request.UserAgent :=
+    'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
+
+  FLangs.Add('Afrikaans', 'af');
+  FLangs.Add('Albanian', 'sq');
+  FLangs.Add('Arabic', 'ar');
+  FLangs.Add('Armenian', 'hy');
+  FLangs.Add('Azerbaijani', 'az');
+  FLangs.Add('Basque', 'eu');
+  FLangs.Add('Belarusian', 'be');
+  FLangs.Add('Bulgarian', 'bg');
+  FLangs.Add('Catalan', 'ca');
+  FLangs.Add('Chinese (Simplified)', 'zh-CN');
+  FLangs.Add('Chinese (Traditional)', 'zh-TW');
+  FLangs.Add('Croatian', 'hr');
+  FLangs.Add('Czech', 'cs');
+  FLangs.Add('Danish', 'da');
+  FLangs.Add('Dutch', 'nl');
+  FLangs.Add('English', 'en');
+  FLangs.Add('Estonian', 'et');
+  FLangs.Add('Filipino', 'tl');
+  FLangs.Add('Finnish', 'fi');
+  FLangs.Add('French', 'fr');
+  FLangs.Add('Galician', 'gl');
+  FLangs.Add('Georgian', 'ka');
+  FLangs.Add('German', 'de');
+  FLangs.Add('Greek', 'el');
+  FLangs.Add('Haitian Creole', 'ht');
+  FLangs.Add('Hebrew', 'iw');
+  FLangs.Add('Hindi', 'hi');
+  FLangs.Add('Hungarian', 'hu');
+  FLangs.Add('Icelandic', 'is');
+  FLangs.Add('Indonesian', 'id');
+  FLangs.Add('Irish', 'ga');
+  FLangs.Add('Italian', 'it');
+  FLangs.Add('Japanese', 'ja');
+  FLangs.Add('Korean', 'ko');
+  FLangs.Add('Latin', 'la');
+  FLangs.Add('Latvian', 'lv');
+  FLangs.Add('Lithuanian', 'lt');
+  FLangs.Add('Macedonian', 'mk');
+  FLangs.Add('Malay', 'ms');
+  FLangs.Add('Maltese', 'mt');
+  FLangs.Add('Norwegian', 'no');
+  FLangs.Add('Persian', 'fa');
+  FLangs.Add('Polish', 'pl');
+  FLangs.Add('Portuguese', 'pt');
+  FLangs.Add('Romanian', 'ro');
+  FLangs.Add('Russian', 'ru');
+  FLangs.Add('Serbian', 'sr');
+  FLangs.Add('Slovak', 'sk');
+  FLangs.Add('Slovenian', 'sl');
+  FLangs.Add('Spanish', 'es');
+  FLangs.Add('Swahili', 'sw');
+  FLangs.Add('Swedish', 'sv');
+  FLangs.Add('Thai', 'th');
+  FLangs.Add('Turkish', 'tr');
+  FLangs.Add('Ukrainian', 'uk');
+  FLangs.Add('Urdu', 'ur');
+  FLangs.Add('Vietnamese', 'vi');
+  FLangs.Add('Welsh', 'cy');
+  FLangs.Add('Yiddish', 'yi');
+end;
+
+destructor TGoogleTranslate.Destroy;
+begin
+  FHttp.Free;
+  inherited;
 end;
 
 function TGoogleTranslate.ExtractTranslation(json: string): string;
@@ -162,32 +193,6 @@ begin
     finally
       JSONValue.Free;
     end;
-end;
-
-function TGoogleTranslate.GTranslate(Text: widestring;
-  srclang, destlang: Integer): string;
-var
-  response, url, srctext, sl, tl: string;
-begin
-  srctext := URLEncode(Text);
-  sl := LangArr[srclang].langid;
-  tl := LangArr[destlang].langid;
-
-  url := Format
-    ('https://translate.google.com/translate_a/single?client=t&sl=%s&tl=%s&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&otf=1&ssel=0&tsel=0&kc=0&q=%s',
-    [sl, tl, srctext]);
-
-  try
-    response := HTTPGet(url);
-  except
-    Result := Text;
-    exit;
-  end;
-
-  Result := ExtractTranslation(FixGoogleJSON(response));
-  if Result = '' then
-    Result := Text;
-
 end;
 
 end.

@@ -14,7 +14,9 @@ uses
   uSettings in 'src\uSettings.pas',
   jsCore in 'src\jsCore.pas',
   jsHighlighter in 'src\jsHighlighter.pas',
-  TextStream in 'src\TextStream.pas';
+  TextStream in 'src\TextStream.pas',
+  Translator in 'src\Translator.pas',
+  YandexTranslate in 'src\YandexTranslate.pas';
 
 {$R *.res}
 
