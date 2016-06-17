@@ -37,7 +37,7 @@ begin
   srctext := URLEncode(Text);
 
   url := Format
-    ('https://translate.google.com/translate_a/single?client=t&sl=%s&tl=%s&hl=en&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&dt=at&ie=UTF-8&oe=UTF-8&otf=1&ssel=0&tsel=0&kc=0&q=%s',
+    ('https://translate.googleapis.com/translate_a/single?client=gtx&sl=%s&tl=%s&dt=t&q=%s',
     [FSrcLang, FDestLang, srctext]);
 
   try
@@ -105,15 +105,20 @@ begin
   FLangs.Add('Azerbaijani', 'az');
   FLangs.Add('Basque', 'eu');
   FLangs.Add('Belarusian', 'be');
+  FLangs.Add('Bengali', 'bn');
+  FLangs.Add('Bosnian', 'bs');
   FLangs.Add('Bulgarian', 'bg');
   FLangs.Add('Catalan', 'ca');
-  FLangs.Add('Chinese (Simplified)', 'zh-CN');
-  FLangs.Add('Chinese (Traditional)', 'zh-TW');
+  FLangs.Add('Cebuano', 'ceb');
+  FLangs.Add('Chichewa', 'ny');
+  FLangs.Add('Chinese Simplified', 'zh-CN');
+  FLangs.Add('Chinese Traditional', 'zh-TW');
   FLangs.Add('Croatian', 'hr');
   FLangs.Add('Czech', 'cs');
   FLangs.Add('Danish', 'da');
   FLangs.Add('Dutch', 'nl');
   FLangs.Add('English', 'en');
+  FLangs.Add('Esperanto', 'eo');
   FLangs.Add('Estonian', 'et');
   FLangs.Add('Filipino', 'tl');
   FLangs.Add('Finnish', 'fi');
@@ -122,41 +127,68 @@ begin
   FLangs.Add('Georgian', 'ka');
   FLangs.Add('German', 'de');
   FLangs.Add('Greek', 'el');
+  FLangs.Add('Gujarati', 'gu');
   FLangs.Add('Haitian Creole', 'ht');
+  FLangs.Add('Hausa', 'ha');
   FLangs.Add('Hebrew', 'iw');
   FLangs.Add('Hindi', 'hi');
+  FLangs.Add('Hmong', 'hmn');
   FLangs.Add('Hungarian', 'hu');
   FLangs.Add('Icelandic', 'is');
+  FLangs.Add('Igbo', 'ig');
   FLangs.Add('Indonesian', 'id');
   FLangs.Add('Irish', 'ga');
   FLangs.Add('Italian', 'it');
   FLangs.Add('Japanese', 'ja');
+  FLangs.Add('Javanese', 'jw');
+  FLangs.Add('Kannada', 'kn');
+  FLangs.Add('Kazakh', 'kk');
+  FLangs.Add('Khmer', 'km');
   FLangs.Add('Korean', 'ko');
+  FLangs.Add('Lao', 'lo');
   FLangs.Add('Latin', 'la');
   FLangs.Add('Latvian', 'lv');
   FLangs.Add('Lithuanian', 'lt');
   FLangs.Add('Macedonian', 'mk');
+  FLangs.Add('Malagasy', 'mg');
   FLangs.Add('Malay', 'ms');
+  FLangs.Add('Malayalam', 'ml');
   FLangs.Add('Maltese', 'mt');
+  FLangs.Add('Maori', 'mi');
+  FLangs.Add('Marathi', 'mr');
+  FLangs.Add('Mongolian', 'mn');
+  FLangs.Add('Myanmar (Burmese)', 'my');
+  FLangs.Add('Nepali', 'ne');
   FLangs.Add('Norwegian', 'no');
   FLangs.Add('Persian', 'fa');
   FLangs.Add('Polish', 'pl');
   FLangs.Add('Portuguese', 'pt');
+  FLangs.Add('Punjabi', 'ma');
   FLangs.Add('Romanian', 'ro');
   FLangs.Add('Russian', 'ru');
   FLangs.Add('Serbian', 'sr');
+  FLangs.Add('Sesotho', 'st');
+  FLangs.Add('Sinhala', 'si');
   FLangs.Add('Slovak', 'sk');
   FLangs.Add('Slovenian', 'sl');
+  FLangs.Add('Somali', 'so');
   FLangs.Add('Spanish', 'es');
+  FLangs.Add('Sudanese', 'su');
   FLangs.Add('Swahili', 'sw');
   FLangs.Add('Swedish', 'sv');
+  FLangs.Add('Tajik', 'tg');
+  FLangs.Add('Tamil', 'ta');
+  FLangs.Add('Telugu', 'te');
   FLangs.Add('Thai', 'th');
   FLangs.Add('Turkish', 'tr');
   FLangs.Add('Ukrainian', 'uk');
   FLangs.Add('Urdu', 'ur');
+  FLangs.Add('Uzbek', 'uz');
   FLangs.Add('Vietnamese', 'vi');
   FLangs.Add('Welsh', 'cy');
   FLangs.Add('Yiddish', 'yi');
+  FLangs.Add('Yoruba', 'yo');
+  FLangs.Add('Zulu', 'zu');
 end;
 
 destructor TGoogleTranslate.Destroy;
@@ -167,23 +199,19 @@ end;
 
 function TGoogleTranslate.ExtractTranslation(json: string): string;
 var
-  JSONValue: TJSONValue;
+  JSONArray: TJSONArray;
   arr, sentence_arr: TJSONArray;
   i: Integer;
 begin
   Result := '';
-  JSONValue := TJSONObject.ParseJSONValue(json) as TJSONValue;
-  if Assigned(JSONValue) then
+  JSONArray := TJSONObject.ParseJSONValue(json) as TJSONArray;
+  if Assigned(JSONArray) then
     try
       try
-        // [[["needle", "..."],["needle2", "..."]  ...
-        arr := JSONValue as TJSONArray;
+        // [[["needle", "..."] ...
+        arr := JSONArray.Get(0) as TJSONArray;
         arr := arr.Get(0) as TJSONArray;
-        for i := 0 to arr.Size - 2 do // skip last
-        begin
-          sentence_arr := arr.Get(i) as TJSONArray;
-          Result := Result + (sentence_arr.Get(0) as TJSONString).Value;
-        end;
+        Result := arr.Get(0).Value
       except
         Result := '';
         exit;
@@ -191,7 +219,7 @@ begin
 
       Result := HTMLDecode(Result);
     finally
-      JSONValue.Free;
+      JSONArray.Free;
     end;
 end;
 

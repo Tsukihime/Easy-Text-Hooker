@@ -299,7 +299,7 @@ begin
   finally
     Settings.Free;
   end;
-  trans := TYandexTranslate.Create(YandexApiKey);
+  trans := TGoogleTranslate.Create();
 
   jstp := JavaScriptTextProcessor.Create;
   OSDForm := TOSDForm.Create(nil);
