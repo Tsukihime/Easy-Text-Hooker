@@ -8,14 +8,14 @@ object OSDForm: TOSDForm
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -11
-  Font.Name = 'Tahoma'
+  Font.Height = -19
+  Font.Name = 'Arial Unicode MS'
   Font.Style = []
   OldCreateOrder = True
   OnCreate = FormCreate
   OnResize = FormResize
   PixelsPerInch = 96
-  TextHeight = 13
+  TextHeight = 25
   object UpdateTimer: TTimer
     Interval = 200
     OnTimer = UpdateTimerTimer

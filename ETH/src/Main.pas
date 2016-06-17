@@ -52,7 +52,7 @@ type
     seDelay: TSpinEdit;
     Label12: TLabel;
     Label13: TLabel;
-    Шрифт: TGroupBox;
+    Font: TGroupBox;
     btnOsdFontSelect: TButton;
     Label14: TLabel;
     Label15: TLabel;
@@ -154,7 +154,7 @@ begin
     Settings.WriteBool('Main', 'ClipboardCopy', ClipboardCopy.checked);
     Settings.WriteInteger('Main', 'CurrentTab', PageControl.TabIndex);
 
-    Settings.BeginSection('Font');
+    Settings.BeginSection('TextareaFont');
     Settings.WriteString('Name', Memo.Font.Name);
     Settings.WriteInteger('CharSet', Memo.Font.CharSet);
     Settings.WriteString('Color', inttohex(Memo.Font.Color, 8));
@@ -207,17 +207,19 @@ var
 begin
   Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
   try
-    ClipboardCopy.checked := Settings.ReadBool('Main', 'ClipboardCopy', False);
-    PageControl.TabIndex := Settings.ReadInteger('Main', 'CurrentTab', 0);
+    Settings.BeginSection('Main');
+    ClipboardCopy.checked := Settings.ReadBool('ClipboardCopy', False);
+    PageControl.TabIndex := Settings.ReadInteger('CurrentTab', 0);
 
-    Memo.Font.Name := Settings.ReadString('Font', 'Name', Memo.Font.Name);
-    Memo.Font.CharSet := Byte(Settings.ReadInteger('Font', 'CharSet',
+    Settings.BeginSection('TextareaFont');
+    Memo.Font.Name := Settings.ReadString('Name', Memo.Font.Name);
+    Memo.Font.CharSet := Byte(Settings.ReadInteger('CharSet',
       Memo.Font.CharSet));
-    Memo.Font.Color := StrToInt('$' + Settings.ReadString('Font', 'Color',
+    Memo.Font.Color := StrToInt('$' + Settings.ReadString('Color',
       inttohex(Memo.Font.Color, 8)));
-    Memo.Font.Size := Settings.ReadInteger('Font', 'Size', Memo.Font.Size);
-    Memo.Font.Style := TFontStyles(Byte(Settings.ReadInteger('Font', 'Style',
-      Byte(Memo.Font.Style))));
+    Memo.Font.Size := Settings.ReadInteger('Size', Memo.Font.Size);
+    Memo.Font.Style :=
+      TFontStyles(Byte(Settings.ReadInteger('Style', Byte(Memo.Font.Style))));
 
     Settings.BeginSection('Translate');
     DoTranslate.checked := Settings.ReadBool('DoTranslate', False);
@@ -254,7 +256,7 @@ begin
       inttohex(clBlack, 8)));
 
     OSDForm.OutlineWidth := Settings.ReadInteger('OutlineWidth', 1);
-    cbSticky.checked := Settings.ReadBool('Sticky', False);
+    cbSticky.checked := Settings.ReadBool('Sticky', True);
     Settings.EndSection;
 
     tbOutline.Position := OSDForm.OutlineWidth;

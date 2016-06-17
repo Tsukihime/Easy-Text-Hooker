@@ -212,8 +212,7 @@
           Top = 26
           Width = 131
           Height = 15
-          Hint = 'Translate into'
-          Caption = #1053#1072#1087#1088#1072#1074#1083#1077#1085#1080#1077' '#1087#1077#1088#1077#1074#1086#1076#1072':'
+          Caption = 'Translate direction:'
         end
         object Label3: TLabel
           Left = 7
@@ -232,11 +231,10 @@
         object DoTranslate: TCheckBox
           Left = 7
           Top = 3
-          Width = 122
+          Width = 142
           Height = 17
-          Hint = 'Enable Online Translate'
           ParentCustomHint = False
-          Caption = #1054#1085#1083#1072#1081#1085' '#1087#1077#1088#1077#1074#1086#1076
+          Caption = 'Enable Online Translate'
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
@@ -278,8 +276,7 @@
           Top = 51
           Width = 131
           Height = 17
-          Hint = 'from clipboard'
-          Caption = #1048#1079' '#1073#1091#1092#1077#1088#1072' '#1086#1073#1084#1077#1085#1072
+          Caption = 'From clipboard'
           TabOrder = 0
         end
         object rbText: TRadioButton
@@ -287,8 +284,7 @@
           Top = 28
           Width = 129
           Height = 17
-          Hint = 'from textarea'
-          Caption = #1048#1079' '#1090#1077#1082#1089#1090#1086#1074#1086#1075#1086' '#1087#1086#1083#1103
+          Caption = 'From textarea'
           Checked = True
           TabOrder = 1
           TabStop = True
@@ -298,8 +294,7 @@
           Top = 5
           Width = 97
           Height = 17
-          Hint = 'Enable'
-          Caption = #1042#1082#1083#1102#1095#1080#1090#1100
+          Caption = 'Enable'
           TabOrder = 2
           OnClick = cbEnableOSDClick
         end
@@ -309,8 +304,7 @@
         Top = -3
         Width = 242
         Height = 124
-        Hint = 'Position'
-        Caption = #1055#1086#1079#1080#1094#1080#1103
+        Caption = 'Position'
         TabOrder = 1
         object Label2: TLabel
           Left = 11
@@ -331,16 +325,14 @@
           Top = 59
           Width = 48
           Height = 15
-          Hint = 'Width:'
-          Caption = #1064#1080#1088#1080#1085#1072':'
+          Caption = 'Width:'
         end
         object Label11: TLabel
           Left = 11
           Top = 78
           Width = 43
           Height = 15
-          Hint = 'Height:'
-          Caption = #1042#1099#1089#1086#1090#1072':'
+          Caption = 'Height:'
         end
         object tbX: TTrackBar
           Left = 61
@@ -403,34 +395,31 @@
           Top = 100
           Width = 97
           Height = 17
-          Hint = 'Sticky'
-          Caption = #1051#1080#1087#1082#1086#1077' '#1086#1082#1085#1086
+          Caption = 'Sticky text'
           TabOrder = 4
           OnClick = cbStickyClick
         end
       end
-      object Шрифт: TGroupBox
+      object Font: TGroupBox
         Left = 399
         Top = -3
         Width = 178
         Height = 124
-        Caption = #1064#1088#1080#1092#1090
+        Caption = 'Font'
         TabOrder = 2
         object Label14: TLabel
           Left = 11
           Top = 46
           Width = 66
           Height = 15
-          Hint = 'Font color:'
-          Caption = #1062#1074#1077#1090' '#1090#1077#1082#1089#1090#1072':'
+          Caption = 'Font color:'
         end
         object Label15: TLabel
           Left = 11
           Top = 74
           Width = 78
           Height = 15
-          Hint = 'Outline color:'
-          Caption = #1062#1074#1077#1090' '#1086#1073#1074#1086#1076#1082#1080':'
+          Caption = 'Outline color:'
         end
         object imgTextColor: TImage
           Left = 113
@@ -453,16 +442,14 @@
           Top = 102
           Width = 97
           Height = 15
-          Hint = 'Outline width:'
-          Caption = #1064#1080#1088#1080#1085#1072' '#1086#1073#1074#1086#1076#1082#1080':'
+          Caption = 'Outline width:'
         end
         object btnOsdFontSelect: TButton
           Left = 8
           Top = 16
           Width = 75
           Height = 25
-          Hint = 'Select font'
-          Caption = #1064#1088#1080#1092#1090
+          Caption = 'Select font'
           TabOrder = 0
           OnClick = btnOsdFontSelectClick
         end
@@ -484,8 +471,7 @@
       end
     end
     object TabSheet2: TTabSheet
-      Hint = 'Text'
-      Caption = #1058#1077#1082#1089#1090
+      Caption = 'Text'
       ImageIndex = 1
       ParentShowHint = False
       ShowHint = True
@@ -522,9 +508,8 @@
           Top = 0
           Width = 75
           Height = 25
-          Hint = 'Set Font'
           Anchors = [akTop, akRight]
-          Caption = #1064#1088#1080#1092#1090
+          Caption = 'Set Font'
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
@@ -535,8 +520,7 @@
           Top = 4
           Width = 233
           Height = 17
-          Hint = 'Copy text to clipboard'
-          Caption = #1050#1086#1087#1080#1088#1086#1074#1072#1090#1100' '#1090#1077#1082#1089#1090' '#1074' '#1073#1091#1092#1077#1088' '#1086#1073#1084#1077#1085#1072
+          Caption = 'Copy text to clipboard'
           ParentShowHint = False
           ShowHint = True
           TabOrder = 1
