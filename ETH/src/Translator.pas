@@ -29,6 +29,8 @@ implementation
 constructor TTranslator.Create;
 begin
   FLangs := TLangsDictionary.Create;
+  FSrcLang := 'jp';
+  FDestLang := 'ru';
 end;
 
 destructor TTranslator.Destroy;
@@ -45,8 +47,10 @@ end;
 procedure TTranslator.SetTranslationDirection(SourceLang,
   DestinationLang: string);
 begin
-  FSrcLang := FLangs[SourceLang];
-  FDestLang := FLangs[DestinationLang];
+  if FLangs.ContainsKey(SourceLang) then
+    FSrcLang := FLangs[SourceLang];
+  if FLangs.ContainsKey(DestinationLang) then
+    FDestLang := FLangs[DestinationLang];
 end;
 
 end.

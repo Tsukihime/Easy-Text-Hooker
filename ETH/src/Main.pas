@@ -34,8 +34,8 @@ type
     GroupBox1: TGroupBox;
     Label1: TLabel;
     DoTranslate: TCheckBox;
-    srclen: TComboBox;
-    destlen: TComboBox;
+    SrcLang: TComboBox;
+    DestLang: TComboBox;
     GroupBox3: TGroupBox;
     rbClipboard: TRadioButton;
     rbText: TRadioButton;
@@ -164,8 +164,8 @@ begin
 
     Settings.BeginSection('Translate');
     Settings.WriteBool('DoTranslate', DoTranslate.checked);
-    Settings.WriteInteger('SrcLang', srclen.ItemIndex);
-    Settings.WriteInteger('DestLang', destlen.ItemIndex);
+    Settings.WriteString('SrcLang', SrcLang.Text);
+    Settings.WriteString('DestLang', DestLang.Text);
     Settings.EndSection;
 
     Settings.BeginSection('OSD');
@@ -203,6 +203,7 @@ end;
 procedure TMainForm.LoadSettings;
 var
   Settings: TSettingsFile;
+  str: string;
 begin
   Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
   try
@@ -221,9 +222,13 @@ begin
     Settings.BeginSection('Translate');
     DoTranslate.checked := Settings.ReadBool('DoTranslate', False);
 
-    srclen.ItemIndex := Settings.ReadInteger('SrcLang', 32);
-    destlen.ItemIndex := Settings.ReadInteger('DestLang', 45);
-    OnLangSelect(srclen);
+    str := Settings.ReadString('SrcLang', 'Japanese');
+    SrcLang.ItemIndex := SrcLang.Items.IndexOf(str);
+
+    str := Settings.ReadString('DestLang', 'Russian');
+    DestLang.ItemIndex := SrcLang.Items.IndexOf(str);
+
+    OnLangSelect(SrcLang);
     Settings.EndSection;
 
     Settings.BeginSection('OSD');
@@ -301,16 +306,16 @@ begin
   agserv.OnNewText := OnNewText;
   agserv.EndLineDelay := 200;
 
-  srclen.Clear;
-  destlen.Clear;
+  SrcLang.Clear;
+  DestLang.Clear;
 
   list := TList<string>.Create(trans.LangPairs.Keys);
   try
     list.Sort;
     for s in list do
     begin
-      srclen.Items.Append(s);
-      destlen.Items.Append(s);
+      SrcLang.Items.Append(s);
+      DestLang.Items.Append(s);
     end;
   finally
     list.Free;
@@ -382,7 +387,7 @@ end;
 
 procedure TMainForm.OnLangSelect(Sender: TObject);
 begin
-  trans.SetTranslationDirection(srclen.Text, destlen.Text);
+  trans.SetTranslationDirection(SrcLang.Text, DestLang.Text);
 end;
 
 procedure TMainForm.tbOutlineChange(Sender: TObject);

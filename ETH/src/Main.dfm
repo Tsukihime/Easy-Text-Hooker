@@ -241,7 +241,7 @@
           ShowHint = True
           TabOrder = 0
         end
-        object srclen: TComboBox
+        object SrcLang: TComboBox
           Left = 42
           Top = 47
           Width = 145
@@ -252,7 +252,7 @@
           TabOrder = 1
           OnSelect = OnLangSelect
         end
-        object destlen: TComboBox
+        object DestLang: TComboBox
           Left = 42
           Top = 74
           Width = 145
