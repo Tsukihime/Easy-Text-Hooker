@@ -202,6 +202,7 @@ function TGoogleTranslate.ExtractTranslation(json: string): string;
 var
   JSONArray: TJSONArray;
   arr: TJSONArray;
+  textArrays: TJSONArray;
   i: Integer;
 begin
   Result := '';
@@ -209,10 +210,13 @@ begin
   if Assigned(JSONArray) then
     try
       try
-        // [[["needle", "..."] ...
-        arr := JSONArray.Get(0) as TJSONArray;
-        arr := arr.Get(0) as TJSONArray;
-        Result := arr.Get(0).Value
+        // [[["needle", "..."], ["needle2", "..."] ...
+        textArrays := JSONArray.Get(0) as TJSONArray;
+        for i := 0 to textArrays.Size - 1 do
+        begin
+          arr := textArrays.Get(i) as TJSONArray;
+          Result := Result + ' ' + arr.Get(0).Value;
+        end;
       except
         Result := '';
         exit;
