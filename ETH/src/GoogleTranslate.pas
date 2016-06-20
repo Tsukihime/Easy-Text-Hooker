@@ -95,6 +95,7 @@ begin
 
   FHttp.Request.AcceptCharSet := 'utf-8';
   FHttp.Request.AcceptEncoding := 'utf-8';
+  FHttp.Request.Connection := 'keep-alive';
   FHttp.Request.UserAgent :=
     'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
 
@@ -200,7 +201,7 @@ end;
 function TGoogleTranslate.ExtractTranslation(json: string): string;
 var
   JSONArray: TJSONArray;
-  arr, sentence_arr: TJSONArray;
+  arr: TJSONArray;
   i: Integer;
 begin
   Result := '';
@@ -216,8 +217,6 @@ begin
         Result := '';
         exit;
       end;
-
-      Result := HTMLDecode(Result);
     finally
       JSONArray.Free;
     end;
