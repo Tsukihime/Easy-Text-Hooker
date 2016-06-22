@@ -168,7 +168,6 @@ function TYandexTranslate.ExtractTranslation(json: string): string;
 var
   JSONObject: TJSONObject;
   JsonArray: TJSONArray;
-  i: Integer;
 begin
   Result := '';
   JSONObject := TJSONObject.ParseJSONValue(json) as TJSONObject;
