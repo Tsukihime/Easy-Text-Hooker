@@ -9,6 +9,7 @@ uses
   HTTPApp,
   IdSSLOpenSSL,
   System.RegularExpressions,
+  Classes,
   Translator;
 
 type
@@ -22,6 +23,8 @@ type
     FHttp: TidHttp;
   public
     function Translate(Text: string): string; override;
+    procedure GetFromLanguages(Items: TStrings); override;
+    procedure GetToLanguages(Items: TStrings); override;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -30,6 +33,8 @@ implementation
 
 { TGoogleTranslate }
 
+// secret translate.googleapis.com API that is internally used by the
+// Google Translate extension for Chrome and requires no authentication.
 function TGoogleTranslate.Translate(Text: string): string;
 var
   response, url, srctext: string;
@@ -86,6 +91,24 @@ begin
     '(?<=[,\[])(?<left>,)|' + '(?<right>,)(?=[,\]])', MatchEvaluator);
 end;
 
+procedure TGoogleTranslate.GetFromLanguages(Items: TStrings);
+var
+  i: Integer;
+begin
+  GetAllLanguages(Items);
+  i := Items.IndexOf('Auto detect');
+  Items.Move(i, 0);
+end;
+
+procedure TGoogleTranslate.GetToLanguages(Items: TStrings);
+var
+  i: Integer;
+begin
+  GetAllLanguages(Items);
+  i := Items.IndexOf('Auto detect');
+  Items.Delete(i);
+end;
+
 constructor TGoogleTranslate.Create;
 begin
   inherited;
@@ -99,6 +122,7 @@ begin
   FHttp.Request.UserAgent :=
     'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.0.3705; .NET CLR 1.1.4322)';
 
+  FLangs.Add('Auto detect', 'auto');
   FLangs.Add('Afrikaans', 'af');
   FLangs.Add('Albanian', 'sq');
   FLangs.Add('Arabic', 'ar');

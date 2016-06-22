@@ -9,6 +9,7 @@ uses
   HTTPApp,
   IdSSLOpenSSL,
   System.RegularExpressions,
+  Classes,
   Translator;
 
 type
@@ -21,6 +22,8 @@ type
     FApiKey: string;
   public
     function Translate(Text: string): string; override;
+    procedure GetFromLanguages(Items: TStrings); override;
+    procedure GetToLanguages(Items: TStrings); override;
     constructor Create(ApiKey: string);
     destructor Destroy; override;
   end;
@@ -182,6 +185,16 @@ begin
     finally
       JSONObject.Free;
     end;
+end;
+
+procedure TYandexTranslate.GetFromLanguages(Items: TStrings);
+begin
+  GetAllLanguages(Items);
+end;
+
+procedure TYandexTranslate.GetToLanguages(Items: TStrings);
+begin
+  GetAllLanguages(Items);
 end;
 
 end.

@@ -228,7 +228,7 @@ begin
     SrcLang.ItemIndex := SrcLang.Items.IndexOf(str);
 
     str := Settings.ReadString('DestLang', 'Russian');
-    DestLang.ItemIndex := SrcLang.Items.IndexOf(str);
+    DestLang.ItemIndex := DestLang.Items.IndexOf(str);
 
     OnLangSelect(SrcLang);
     Settings.EndSection;
@@ -286,9 +286,6 @@ end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 var
-  i: Integer;
-  list: TList<string>;
-  s: string;
   Settings: TSettingsFile;
   YandexApiKey: string;
 begin
@@ -308,20 +305,8 @@ begin
   agserv.OnNewText := OnNewText;
   agserv.EndLineDelay := 200;
 
-  SrcLang.Clear;
-  DestLang.Clear;
-
-  list := TList<string>.Create(trans.LangPairs.Keys);
-  try
-    list.Sort;
-    for s in list do
-    begin
-      SrcLang.Items.Append(s);
-      DestLang.Items.Append(s);
-    end;
-  finally
-    list.Free;
-  end;
+  trans.GetFromLanguages(SrcLang.Items);
+  trans.GetToLanguages(DestLang.Items);
 
   LoadSettings;
   UpdateColorBoxes;

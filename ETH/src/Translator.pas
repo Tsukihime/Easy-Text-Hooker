@@ -3,7 +3,7 @@
 interface
 
 uses
-  System.Generics.Collections;
+  System.Generics.Collections, Classes;
 
 type
   TLangsDictionary = TDictionary<string, string>;
@@ -13,11 +13,12 @@ type
     FSrcLang, FDestLang: string;
     FLangs: TLangsDictionary;
   protected
-    function GetLangs: TLangsDictionary;
+    procedure GetAllLanguages(Items: TStrings);
   public
     function Translate(text: string): string; virtual; abstract;
     procedure SetTranslationDirection(SourceLang, DestinationLang: string);
-    property LangPairs: TLangsDictionary read GetLangs;
+    procedure GetFromLanguages(Items: TStrings); virtual; abstract;
+    procedure GetToLanguages(Items: TStrings); virtual; abstract;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -39,9 +40,22 @@ begin
   inherited;
 end;
 
-function TTranslator.GetLangs: TLangsDictionary;
+procedure TTranslator.GetAllLanguages(Items: TStrings);
+var
+  Key: string;
+  tmpsl: TStringList;
 begin
-  Result := FLangs;
+  tmpsl := TStringList.Create;
+  try
+    for Key in FLangs.Keys do
+      tmpsl.Add(Key);
+
+    tmpsl.Sort;
+    Items.Clear;
+    Items.Assign(tmpsl);
+  finally
+    tmpsl.Free;
+  end;
 end;
 
 procedure TTranslator.SetTranslationDirection(SourceLang,
