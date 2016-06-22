@@ -113,8 +113,6 @@ begin
 end;
 
 procedure TPipeServer.UpdateQueue;
-var
-  cnt: Integer;
 begin
   if abs(GetTickCount - LastUpdateTime) > QueueUpdateInterval then
   begin
@@ -140,7 +138,6 @@ end;
 function TPipeServer.FillWOArray(var WOArr: TWOHandles): Cardinal;
 var
   i, psz: Integer;
-  pair: TPair<THandle, TPipe>;
 begin
   psz := Pipes.Count;
   if psz > MAXIMUM_WAIT_OBJECTS - 1 then

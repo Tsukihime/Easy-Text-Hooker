@@ -123,7 +123,6 @@ var
   FontFamily: TGPFontFamily;
   GPFont: TGPFont;
   GPStringFormat: TGPStringFormat;
-  GPFontStyle: Integer;
   dx, dy, distance: Integer;
 begin
   Surface := TGPBitmap.Create(Width, Height, PixelFormat32bppARGB);
