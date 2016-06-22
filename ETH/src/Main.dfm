@@ -21,7 +21,7 @@ object MainForm: TMainForm
     Top = 0
     Width = 683
     Height = 152
-    ActivePage =TabAGTH
+    ActivePage = TabAGTH
     Align = alClient
     ParentShowHint = False
     ShowHint = True
