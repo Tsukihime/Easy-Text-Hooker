@@ -16,10 +16,10 @@ type
     OSDTimer: TTimer;
     FontDialog: TFontDialog;
     PageControl: TPageControl;
-    TabSheet2: TTabSheet;
-    TabSheet3: TTabSheet;
+    TabOSD: TTabSheet;
+    TabAGTH: TTabSheet;
     Memo: TMemo;
-    TabSheet4: TTabSheet;
+    TabText: TTabSheet;
     AGTHMemo: TMemo;
     cbStreams: TComboBox;
     GroupBox2: TGroupBox;
@@ -30,7 +30,7 @@ type
     btnHook: TButton;
     ProcIcon: TImageList;
     Images: TImageList;
-    TabSheet5: TTabSheet;
+    TabTranslate: TTabSheet;
     GroupBox1: TGroupBox;
     Label1: TLabel;
     DoTranslate: TCheckBox;
@@ -61,7 +61,7 @@ type
     ColorDialog1: TColorDialog;
     tbOutline: TTrackBar;
     Label16: TLabel;
-    js_preProcess: TTabSheet;
+    TabJs_preProcess: TTabSheet;
     Panel1: TPanel;
     btnScriptLoad: TButton;
     OpenDialog: TOpenDialog;

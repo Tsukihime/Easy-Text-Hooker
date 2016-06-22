@@ -1,4 +1,4 @@
-﻿object MainForm: TMainForm
+object MainForm: TMainForm
   Left = 271
   Top = 298
   Caption = 'Easy Text Hooker'
@@ -21,12 +21,12 @@
     Top = 0
     Width = 683
     Height = 152
-    ActivePage = TabSheet3
+    ActivePage =TabAGTH
     Align = alClient
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
-    object TabSheet3: TTabSheet
+    object TabAGTH: TTabSheet
       Caption = 'AGTH >'
       ImageIndex = 2
       DesignSize = (
@@ -126,7 +126,7 @@
         end
       end
     end
-    object js_preProcess: TTabSheet
+    object TabJs_preProcess: TTabSheet
       Caption = 'Text processor >'
       ImageIndex = 5
       object Panel1: TPanel
@@ -196,7 +196,7 @@
         TabOrder = 1
       end
     end
-    object TabSheet5: TTabSheet
+    object TabTranslate: TTabSheet
       Caption = 'Translate >'
       ImageIndex = 4
       object GroupBox1: TGroupBox
@@ -262,7 +262,64 @@
         end
       end
     end
-    object TabSheet4: TTabSheet
+    object TabText: TTabSheet
+      Caption = 'Text >'
+      ImageIndex = 1
+      ParentShowHint = False
+      ShowHint = True
+      object Memo: TMemo
+        Left = 0
+        Top = 28
+        Width = 675
+        Height = 94
+        Align = alClient
+        BevelInner = bvNone
+        BevelOuter = bvNone
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Tahoma'
+        Font.Style = []
+        ParentFont = False
+        ScrollBars = ssVertical
+        TabOrder = 0
+      end
+      object Panel2: TPanel
+        Left = 0
+        Top = 0
+        Width = 675
+        Height = 28
+        Align = alTop
+        BevelOuter = bvNone
+        TabOrder = 1
+        DesignSize = (
+          675
+          28)
+        object FontSet: TButton
+          Left = 597
+          Top = 0
+          Width = 75
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Set Font'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+          OnClick = FontSetClick
+        end
+        object ClipboardCopy: TCheckBox
+          Left = 8
+          Top = 4
+          Width = 233
+          Height = 17
+          Caption = 'Copy text to clipboard'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 1
+        end
+      end
+    end
+    object TabOSD: TTabSheet
       Caption = 'OSD'
       ImageIndex = 3
       object GroupBox3: TGroupBox
@@ -467,63 +524,6 @@
           TickMarks = tmBoth
           TickStyle = tsNone
           OnChange = tbOutlineChange
-        end
-      end
-    end
-    object TabSheet2: TTabSheet
-      Caption = 'Text'
-      ImageIndex = 1
-      ParentShowHint = False
-      ShowHint = True
-      object Memo: TMemo
-        Left = 0
-        Top = 28
-        Width = 675
-        Height = 94
-        Align = alClient
-        BevelInner = bvNone
-        BevelOuter = bvNone
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Tahoma'
-        Font.Style = []
-        ParentFont = False
-        ScrollBars = ssVertical
-        TabOrder = 0
-      end
-      object Panel2: TPanel
-        Left = 0
-        Top = 0
-        Width = 675
-        Height = 28
-        Align = alTop
-        BevelOuter = bvNone
-        TabOrder = 1
-        DesignSize = (
-          675
-          28)
-        object FontSet: TButton
-          Left = 597
-          Top = 0
-          Width = 75
-          Height = 25
-          Anchors = [akTop, akRight]
-          Caption = 'Set Font'
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 0
-          OnClick = FontSetClick
-        end
-        object ClipboardCopy: TCheckBox
-          Left = 8
-          Top = 4
-          Width = 233
-          Height = 17
-          Caption = 'Copy text to clipboard'
-          ParentShowHint = False
-          ShowHint = True
-          TabOrder = 1
         end
       end
     end
