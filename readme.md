@@ -18,6 +18,68 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 ## Screenshots
 
-![Interface](https://dl.dropboxusercontent.com/u/14783184/ETH/AGTH.png?dl=1)
-
 ![OSD](https://dl.dropboxusercontent.com/u/14783184/ETH/Game.png?dl=1)
+
+# Manual
+
+### Tab AGTH
+
+![TabAGTH](https://dl.dropboxusercontent.com/u/14783184/ETH/AGTH.png?dl=1)
+
+In order to establish the interception of text in the game:
+- Select the game in the drop-down list of processes
+- enter the "H-code" if needed
+- Press `Hook`
+- As the game will display the text: in the drop-down list on the right displays a list of text streams. Select the desired. It will be used as a source text for further processing.
+
+### Tab Text processor
+
+![TabJS](https://dl.dropboxusercontent.com/u/14783184/ETH/JS.png?dl=1)
+
+If you want to preprocess text before translate (eg to remove duplicate symbols, replace the names of heroes, and so forth), use a custom script.
+
+For this:
+- Load the script by clicking the `Load` and select the script file.
+- For activate the preprocessing text tick checkbox `Enable`
+
+The scripts should be written in JavaScript and take form of:
+
+```javascript
+/* preprocess text function */
+function process_text(text)
+{
+	// write code here
+	return ">>>" + text + "<<<";
+}
+```
+Where the variable `text` contains a line of text to be processed, and return returns processed text back in the program.
+
+### Tab Translate
+
+![TabTranslate](https://dl.dropboxusercontent.com/u/14783184/ETH/translate.png?dl=1)
+
+- Checkbox `Enable` activates the online text translation feature.
+- In the drop-down lists you can choose the source language and the language which will be translated
+- This function requires an Internet connection.
+
+### Tab Text
+
+![TabText](https://dl.dropboxusercontent.com/u/14783184/ETH/text.png?dl=1)
+
+Displays intercepted, processed and translated text.
+
+The checkbox `Copy text to clipboard` enables copying text from a text field to the clipboard. (Need for integration of offline translators).
+
+### Tab OSD
+
+![TabOSD](https://dl.dropboxusercontent.com/u/14783184/ETH/OSD.png?dl=1)
+
+Responsible for the display subtitles on top of the game.
+
+- Checkbox `Enable` enables subtitles
+- `From textarea` & `From clipboard` radio buttons specify the source text to display: a text box or clipboard - respectively.
+- Sliders `X`,` Y`, `Width` and` Height` define the position and size of the window display subtitles.
+- Checkbox `Sticky text` responsible for auto positioning subtitle window on the current active window (the game).
+- Button `Select font` allows you to select the subtitle font.
+- `Font color` and `Outline color` set the text color and outline color.
+- Slider `Outline width` sets the outline width in pixels.
