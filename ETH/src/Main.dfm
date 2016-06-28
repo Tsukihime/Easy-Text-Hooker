@@ -515,8 +515,7 @@ object MainForm: TMainForm
           Top = 100
           Width = 68
           Height = 16
-          Max = 6
-          Min = 1
+          Max = 9
           Position = 1
           PositionToolTip = ptTop
           TabOrder = 1
