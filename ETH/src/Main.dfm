@@ -538,9 +538,9 @@ object MainForm: TMainForm
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
-    Font.Name = 'MS Mincho'
+    Font.Name = 'Arial Unicode MS'
     Font.Style = []
-    Options = [fdEffects, fdNoVectorFonts]
+    Options = [fdTrueTypeOnly, fdEffects]
     Left = 80
     Top = 112
   end
