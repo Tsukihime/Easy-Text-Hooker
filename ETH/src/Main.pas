@@ -4,7 +4,7 @@ interface
 
 uses Vcl.Samples.Spin, Vcl.ImgList, Vcl.Controls, Vcl.StdCtrls, Vcl.Dialogs,
   Vcl.ExtCtrls, Vcl.ComCtrls, System.Classes, Forms, Types, Winapi.Messages,
-  System.Generics.Collections,
+  System.Generics.Collections, Graphics,
   //
   AGTHServer,
   jsCore,
@@ -74,6 +74,9 @@ type
     Label3: TLabel;
     Label4: TLabel;
     cbSticky: TCheckBox;
+    rbSpyWindow: TRadioButton;
+    imgSelectWindow: TImage;
+    CrossIcon: TImageList;
     procedure OSDTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -94,6 +97,11 @@ type
     procedure cbStickyClick(Sender: TObject);
     procedure cbProcessChange(Sender: TObject);
     procedure OnLangSelect(Sender: TObject);
+    procedure rbSpyWindowChange(Sender: TObject);
+    procedure imgSelectWindowMouseMove(Sender: TObject; Shift: TShiftState;
+      X, Y: Integer);
+    procedure imgSelectWindowMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     procedure OnNewStream(lines: TStrings);
     procedure OnNewText(Text: widestring);
@@ -103,13 +111,19 @@ type
     procedure UpdateColorBoxes;
 
     procedure LoadScript(path: string);
+    function GetSpyWindowText(Hwnd: THandle): string;
   private
     agserv: TAGTHServer;
     jstp: JavaScriptTextProcessor;
     trans: TTranslator;
+    SpyWindowHwnd: THandle;
+    IsSpyWindowSearch: boolean;
   protected
     procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
   end;
+
+const
+  crCustomCrossHair = 1;
 
 var
   MainForm: TMainForm;
@@ -117,7 +131,7 @@ var
 implementation
 
 uses psapi, shellapi, CLIPBRD, SysUtils, Windows,
-  System.UITypes, Graphics,
+  System.UITypes,
   //
   OSD,
   Inject,
@@ -172,6 +186,7 @@ begin
     Settings.WriteBool('EnableOSD', cbEnableOSD.checked);
     Settings.WriteBool('FromClipboard', rbClipboard.checked);
     Settings.WriteBool('FromTextarea', rbText.checked);
+    Settings.WriteBool('FromSpyWindow', rbSpyWindow.checked);
     Settings.WriteInteger('PositionX', tbX.Position);
     Settings.WriteInteger('PositionY', tbY.Position);
     Settings.WriteInteger('PositionWidth', tbWidth.Position);
@@ -237,6 +252,8 @@ begin
     cbEnableOSD.checked := Settings.ReadBool('EnableOSD', False);
     rbClipboard.checked := Settings.ReadBool('FromClipboard', False);
     rbText.checked := Settings.ReadBool('FromTextarea', True);
+    rbSpyWindow.checked := Settings.ReadBool('FromSpyWindow', False);
+    rbSpyWindowChange(rbSpyWindow);
 
     tbX.Position := Settings.ReadInteger('PositionX', 50);
     tbY.Position := Settings.ReadInteger('PositionY', 100);
@@ -289,6 +306,10 @@ var
   Settings: TSettingsFile;
   YandexApiKey: string;
 begin
+  SpyWindowHwnd := INVALID_HANDLE_VALUE;
+  IsSpyWindowSearch := False;
+  Screen.Cursors[crCustomCrossHair] := LoadCursor(hInstance, 'Cursor_1');
+
   Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
   try
     Settings.BeginSection('Translate');
@@ -312,14 +333,41 @@ begin
   UpdateColorBoxes;
 end;
 
+function TMainForm.GetSpyWindowText(Hwnd: THandle): string;
+var
+  Text: string;
+begin
+  if Hwnd <> INVALID_HANDLE_VALUE then
+  begin
+    SetLength(Text, SendMessage(Hwnd, WM_GETTEXTLENGTH, 0, 0) + 1);
+    SendMessage(Hwnd, WM_GETTEXT, length(Text), Integer(PChar(Text)));
+    Result := Text;
+  end
+  else
+    Result := '';
+end;
+
 procedure TMainForm.OSDTimerTimer(Sender: TObject);
 begin
   try
     if rbClipboard.checked then
-      OSDForm.SetText(Clipboard.AsText);
+      OSDForm.SetText(Clipboard.AsText)
+    else if rbSpyWindow.checked and not IsSpyWindowSearch then
+    begin
+      OSDForm.SetText(GetSpyWindowText(SpyWindowHwnd));
+    end;
   except
     // who cares?
   end;
+end;
+
+procedure TMainForm.rbSpyWindowChange(Sender: TObject);
+begin
+  if rbSpyWindow.checked then
+    CrossIcon.GetBitmap(1, imgSelectWindow.Picture.Bitmap)
+  else
+    CrossIcon.GetBitmap(0, imgSelectWindow.Picture.Bitmap);
+  imgSelectWindow.Repaint;
 end;
 
 procedure TMainForm.OSDPosChange(Sender: TObject);
@@ -357,6 +405,36 @@ begin
   if ColorDialog1.Execute(Handle) then
     OSDForm.OutlineColor := ColorDialog1.Color;
   UpdateColorBoxes;
+end;
+
+procedure TMainForm.imgSelectWindowMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+var
+  CustomHwnd: THandle;
+begin
+  if rbSpyWindow.checked then
+  begin
+    if ssLeft in Shift then
+    begin
+      Screen.Cursor := crCustomCrossHair;
+      IsSpyWindowSearch := True;
+      CustomHwnd := windowFromPoint(Mouse.CursorPos);
+      OSDForm.SetText(GetSpyWindowText(CustomHwnd));
+    end
+    else
+      Screen.Cursor := crDefault;
+  end;
+end;
+
+procedure TMainForm.imgSelectWindowMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  IsSpyWindowSearch := False;
+  if rbSpyWindow.checked then
+  begin
+    Screen.Cursor := crDefault;
+    SpyWindowHwnd := windowFromPoint(Mouse.CursorPos);
+  end;
 end;
 
 procedure TMainForm.imgTextColorClick(Sender: TObject);
@@ -453,24 +531,24 @@ procedure TMainForm.cbProcessDrawItem(Control: TWinControl; Index: Integer;
   Rect: TRect; State: TOwnerDrawState);
 var
   ComboBox: TComboBox;
-  bitmap: TBitmap;
+  Bitmap: Graphics.TBitmap;
 begin
   ComboBox := (Control as TComboBox);
-  bitmap := TBitmap.Create;
+  Bitmap := Graphics.TBitmap.Create;
   try
-    ProcIcon.GetBitmap(index, bitmap);
+    ProcIcon.GetBitmap(index, Bitmap);
     with ComboBox.Canvas do
     begin
       FillRect(Rect);
-      if bitmap.Handle <> 0 then
-        Draw(Rect.Left + 2, Rect.Top, bitmap);
+      if Bitmap.Handle <> 0 then
+        Draw(Rect.Left + 2, Rect.Top, Bitmap);
       Rect := Bounds(Rect.Left + ComboBox.ItemHeight + 2 + 5, Rect.Top,
         Rect.Right - Rect.Left, Rect.Bottom - Rect.Top);
       DrawText(Handle, PChar(ComboBox.Items[index]),
         length(ComboBox.Items[index]), Rect, DT_VCENTER + DT_SINGLELINE);
     end;
   finally
-    bitmap.Free;
+    Bitmap.Free;
   end;
 end;
 

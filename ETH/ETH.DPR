@@ -1,5 +1,7 @@
 program ETH;
 
+{$R *.dres}
+
 uses
   Forms,
   windows,
