@@ -37,8 +37,6 @@ type
     SrcLang: TComboBox;
     DestLang: TComboBox;
     GroupBox3: TGroupBox;
-    rbClipboard: TRadioButton;
-    rbText: TRadioButton;
     cbEnableOSD: TCheckBox;
     GroupBox4: TGroupBox;
     tbX: TTrackBar;
@@ -74,9 +72,10 @@ type
     Label3: TLabel;
     Label4: TLabel;
     cbSticky: TCheckBox;
-    rbSpyWindow: TRadioButton;
     imgSelectWindow: TImage;
-    CrossIcon: TImageList;
+    Label5: TLabel;
+    cbOSDSource: TComboBox;
+    lbWindowName: TLabel;
     procedure OSDTimerTimer(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
@@ -97,11 +96,11 @@ type
     procedure cbStickyClick(Sender: TObject);
     procedure cbProcessChange(Sender: TObject);
     procedure OnLangSelect(Sender: TObject);
-    procedure rbSpyWindowChange(Sender: TObject);
     procedure imgSelectWindowMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
     procedure imgSelectWindowMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure cbOSDSourceChange(Sender: TObject);
   private
     procedure OnNewStream(lines: TStrings);
     procedure OnNewText(Text: widestring);
@@ -124,6 +123,10 @@ type
 
 const
   crCustomCrossHair = 1;
+
+  cbTextarea = 0;
+  cbClipboard = 1;
+  cbCustomWindow = 2;
 
 var
   MainForm: TMainForm;
@@ -184,9 +187,8 @@ begin
 
     Settings.BeginSection('OSD');
     Settings.WriteBool('EnableOSD', cbEnableOSD.checked);
-    Settings.WriteBool('FromClipboard', rbClipboard.checked);
-    Settings.WriteBool('FromTextarea', rbText.checked);
-    Settings.WriteBool('FromSpyWindow', rbSpyWindow.checked);
+    Settings.WriteString('OSDSource', cbOSDSource.Text);
+
     Settings.WriteInteger('PositionX', tbX.Position);
     Settings.WriteInteger('PositionY', tbY.Position);
     Settings.WriteInteger('PositionWidth', tbWidth.Position);
@@ -250,10 +252,9 @@ begin
 
     Settings.BeginSection('OSD');
     cbEnableOSD.checked := Settings.ReadBool('EnableOSD', False);
-    rbClipboard.checked := Settings.ReadBool('FromClipboard', False);
-    rbText.checked := Settings.ReadBool('FromTextarea', True);
-    rbSpyWindow.checked := Settings.ReadBool('FromSpyWindow', False);
-    rbSpyWindowChange(rbSpyWindow);
+    str := Settings.ReadString('OSDSource', 'Textarea');
+    cbOSDSource.ItemIndex := cbOSDSource.Items.IndexOf(str);
+    cbOSDSourceChange(cbOSDSource);
 
     tbX.Position := Settings.ReadInteger('PositionX', 50);
     tbY.Position := Settings.ReadInteger('PositionY', 100);
@@ -308,7 +309,7 @@ var
 begin
   SpyWindowHwnd := INVALID_HANDLE_VALUE;
   IsSpyWindowSearch := False;
-  Screen.Cursors[crCustomCrossHair] := LoadCursor(hInstance, 'Cursor_1');
+  Screen.Cursors[crCustomCrossHair] := LoadCursor(hInstance, 'CrosshairCursor');
 
   Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
   try
@@ -348,25 +349,30 @@ begin
 end;
 
 procedure TMainForm.OSDTimerTimer(Sender: TObject);
+var
+  s: string;
 begin
   try
-    if rbClipboard.checked then
+    if cbOSDSource.ItemIndex = cbClipboard then
       OSDForm.SetText(Clipboard.AsText)
-    else if rbSpyWindow.checked and not IsSpyWindowSearch then
+    else if (cbOSDSource.ItemIndex = cbCustomWindow) and not IsSpyWindowSearch
+    then
     begin
-      OSDForm.SetText(GetSpyWindowText(SpyWindowHwnd));
+      s := GetSpyWindowText(SpyWindowHwnd);
+      OSDForm.SetText(s);
     end;
   except
     // who cares?
   end;
 end;
 
-procedure TMainForm.rbSpyWindowChange(Sender: TObject);
+procedure TMainForm.cbOSDSourceChange(Sender: TObject);
+var
+  res: boolean;
 begin
-  if rbSpyWindow.checked then
-    CrossIcon.GetBitmap(1, imgSelectWindow.Picture.Bitmap)
-  else
-    CrossIcon.GetBitmap(0, imgSelectWindow.Picture.Bitmap);
+  res := cbOSDSource.ItemIndex = cbCustomWindow;
+  imgSelectWindow.Visible := res;
+  lbWindowName.Visible := res;
   imgSelectWindow.Repaint;
 end;
 
@@ -409,10 +415,14 @@ end;
 
 procedure TMainForm.imgSelectWindowMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
+const
+  MaxLength = 100;
 var
   CustomHwnd: THandle;
+  Text: string;
+  Size: Integer;
 begin
-  if rbSpyWindow.checked then
+  if cbOSDSource.ItemIndex = cbCustomWindow then
   begin
     if ssLeft in Shift then
     begin
@@ -420,6 +430,11 @@ begin
       IsSpyWindowSearch := True;
       CustomHwnd := windowFromPoint(Mouse.CursorPos);
       OSDForm.SetText(GetSpyWindowText(CustomHwnd));
+
+      SetLength(Text, MaxLength);
+      Size := GetClassName(CustomHwnd, PChar(Text), MaxLength);
+      SetLength(Text, Size);
+      lbWindowName.Caption := Text;
     end
     else
       Screen.Cursor := crDefault;
@@ -430,7 +445,7 @@ procedure TMainForm.imgSelectWindowMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   IsSpyWindowSearch := False;
-  if rbSpyWindow.checked then
+  if cbOSDSource.ItemIndex = cbCustomWindow then
   begin
     Screen.Cursor := crDefault;
     SpyWindowHwnd := windowFromPoint(Mouse.CursorPos);
@@ -638,7 +653,7 @@ begin
   if DoTranslate.checked then
     s := trans.Translate(s);
 
-  if (cbEnableOSD.checked) and (rbText.checked) then
+  if (cbEnableOSD.checked) and (cbOSDSource.ItemIndex = cbTextarea) then
     OSDForm.SetText(s);
 
   if ClipboardCopy.checked then

@@ -130,7 +130,7 @@
 			<DCCReference Include="src\YandexTranslate.pas"/>
 			<RcItem Include="Crosshair.cur">
 				<ResourceType>CURSOR</ResourceType>
-				<ResourceId>Cursor_1</ResourceId>
+				<ResourceId>CrosshairCursor</ResourceId>
 			</RcItem>
 			<BuildConfiguration Include="Debug">
 				<Key>Cfg_2</Key>
@@ -164,7 +164,7 @@
 						<VersionInfo Name="MajorVer">1</VersionInfo>
 						<VersionInfo Name="MinorVer">0</VersionInfo>
 						<VersionInfo Name="Release">0</VersionInfo>
-						<VersionInfo Name="Build">153</VersionInfo>
+						<VersionInfo Name="Build">154</VersionInfo>
 						<VersionInfo Name="Debug">False</VersionInfo>
 						<VersionInfo Name="PreRelease">False</VersionInfo>
 						<VersionInfo Name="Special">False</VersionInfo>
@@ -176,7 +176,7 @@
 					<VersionInfoKeys>
 						<VersionInfoKeys Name="CompanyName">&quot;VovaN&quot; Company</VersionInfoKeys>
 						<VersionInfoKeys Name="FileDescription"/>
-						<VersionInfoKeys Name="FileVersion">1.0.0.153</VersionInfoKeys>
+						<VersionInfoKeys Name="FileVersion">1.0.0.154</VersionInfoKeys>
 						<VersionInfoKeys Name="InternalName">ETH</VersionInfoKeys>
 						<VersionInfoKeys Name="LegalCopyright"/>
 						<VersionInfoKeys Name="LegalTrademarks"/>
