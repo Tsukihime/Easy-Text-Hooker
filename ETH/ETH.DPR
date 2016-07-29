@@ -1,24 +1,23 @@
 program ETH;
 
-{$R *.dres}
+{$WARN SYMBOL_PLATFORM OFF}
 
 uses
   Forms,
-  windows,
   Main in 'src\Main.pas' {MainForm},
-  OSD in 'src\OSD.pas' {OSDForm},
-  GoogleTranslate in 'src\GoogleTranslate.pas',
-  AGTHServer in 'src\AGTHServer.pas',
-  PipeServer in 'src\PipeServer.pas',
-  Inject in 'src\Inject.pas',
-  Pipe in 'src\Pipe.pas',
-  AGTHConst in 'src\AGTHConst.pas',
-  uSettings in 'src\uSettings.pas',
-  jsCore in 'src\jsCore.pas',
-  jsHighlighter in 'src\jsHighlighter.pas',
-  TextStream in 'src\TextStream.pas',
-  Translator in 'src\Translator.pas',
-  YandexTranslate in 'src\YandexTranslate.pas';
+  TextProcessorProvider in 'src\Core\TextProcessorProvider.pas',
+  TextPublisher in 'src\Core\TextPublisher.pas',
+  TextProcessorManager in 'src\Core\TextProcessorManager.pas',
+  ApplicationCore in 'src\Core\ApplicationCore.pas',
+  SettingsNode in 'src\Core\SettingsNode.pas',
+  SettingsFile in 'src\Core\SettingsFile.pas',
+  TextProcessorNode in 'src\Core\TextProcessorNode.pas' {,
+    PluginAPI_TLB in 'src\PluginAPI\Headers\PluginAPI_TLB.pas';
+
+    {$R *.res},
+  HostPluginUIPanel in 'src\HostPluginUIPanel.pas',
+  PluginAPI_TLB in 'src\PluginAPI\Headers\PluginAPI_TLB.pas',
+  PluginManager in 'src\Core\PluginManager.pas';
 
 {$R *.res}
 
@@ -30,4 +29,3 @@ begin
   Application.Run;
 
 end.
-

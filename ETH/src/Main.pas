@@ -1,669 +1,351 @@
-﻿unit Main;
+unit Main;
 
 interface
 
-uses Vcl.Samples.Spin, Vcl.ImgList, Vcl.Controls, Vcl.StdCtrls, Vcl.Dialogs,
-  Vcl.ExtCtrls, Vcl.ComCtrls, System.Classes, Forms, Types, Winapi.Messages,
-  System.Generics.Collections, Graphics,
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
+  System.Classes, VirtualTrees, Vcl.Forms, Vcl.Menus, Vcl.ImgList, Vcl.Controls,
+  Vcl.ExtCtrls, Vcl.StdCtrls, Vcl.Samples.Spin, Vcl.Graphics,
   //
-  AGTHServer,
-  jsCore,
-  jsHighlighter,
-  Translator;
+  ActiveX,
+  PluginAPI_TLB,
+  TextProcessorManager,
+  TextProcessorNode,
+  TextProcessorProvider,
+  SettingsFile,
+  System.Generics.Collections,
+  HostPluginUIPanel;
 
 type
   TMainForm = class(TForm)
-    OSDTimer: TTimer;
-    FontDialog: TFontDialog;
-    PageControl: TPageControl;
-    TabOSD: TTabSheet;
-    TabAGTH: TTabSheet;
-    Memo: TMemo;
-    TabText: TTabSheet;
-    AGTHMemo: TMemo;
-    cbStreams: TComboBox;
-    GroupBox2: TGroupBox;
-    cbProcess: TComboBox;
-    Label7: TLabel;
-    edHCode: TEdit;
-    Label8: TLabel;
-    btnHook: TButton;
-    ProcIcon: TImageList;
-    Images: TImageList;
-    TabTranslate: TTabSheet;
-    GroupBox1: TGroupBox;
+    HostPanelStub: TPanel;
+    ImageList1: TImageList;
+    PopupMenu1: TPopupMenu;
+    DeleteMenuItem: TMenuItem;
+    FilterGraphTree: TVirtualStringTree;
+    Splitter1: TSplitter;
+    Timer1: TTimer;
     Label1: TLabel;
-    DoTranslate: TCheckBox;
-    SrcLang: TComboBox;
-    DestLang: TComboBox;
-    GroupBox3: TGroupBox;
-    cbEnableOSD: TCheckBox;
-    GroupBox4: TGroupBox;
-    tbX: TTrackBar;
-    Label2: TLabel;
-    Label9: TLabel;
-    Label10: TLabel;
-    Label11: TLabel;
-    tbY: TTrackBar;
-    tbWidth: TTrackBar;
-    tbHeight: TTrackBar;
-    seDelay: TSpinEdit;
-    Label12: TLabel;
-    Label13: TLabel;
-    Font: TGroupBox;
-    btnOsdFontSelect: TButton;
-    Label14: TLabel;
-    Label15: TLabel;
-    imgTextColor: TImage;
-    imgOutlineColor: TImage;
-    ColorDialog1: TColorDialog;
-    tbOutline: TTrackBar;
-    Label16: TLabel;
-    TabJs_preProcess: TTabSheet;
-    Panel1: TPanel;
-    btnScriptLoad: TButton;
-    OpenDialog: TOpenDialog;
-    chbTextProcessor: TCheckBox;
-    ScriptArea: TRichEdit;
-    mScriptPath: TMemo;
-    Panel2: TPanel;
-    FontSet: TButton;
-    ClipboardCopy: TCheckBox;
-    Label3: TLabel;
-    Label4: TLabel;
-    cbSticky: TCheckBox;
-    imgSelectWindow: TImage;
-    Label5: TLabel;
-    cbOSDSource: TComboBox;
-    lbWindowName: TLabel;
-    procedure OSDTimerTimer(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
-    procedure FontSetClick(Sender: TObject);
-    procedure cbStreamsChange(Sender: TObject);
-    procedure cbEnableOSDClick(Sender: TObject);
-    procedure cbProcessDropDown(Sender: TObject);
-    procedure cbProcessDrawItem(Control: TWinControl; Index: Integer;
-      Rect: TRect; State: TOwnerDrawState);
-    procedure btnHookClick(Sender: TObject);
-    procedure OSDPosChange(Sender: TObject);
-    procedure seDelayChange(Sender: TObject);
-    procedure btnOsdFontSelectClick(Sender: TObject);
-    procedure imgTextColorClick(Sender: TObject);
-    procedure imgOutlineColorClick(Sender: TObject);
-    procedure tbOutlineChange(Sender: TObject);
-    procedure btnScriptLoadClick(Sender: TObject);
-    procedure cbStickyClick(Sender: TObject);
-    procedure cbProcessChange(Sender: TObject);
-    procedure OnLangSelect(Sender: TObject);
-    procedure imgSelectWindowMouseMove(Sender: TObject; Shift: TShiftState;
-      X, Y: Integer);
-    procedure imgSelectWindowMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
-    procedure cbOSDSourceChange(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure DeleteMenuItemClick(Sender: TObject);
+    procedure AddMenuItemClick(Sender: TObject);
+    procedure PopupMenu1Popup(Sender: TObject);
+    procedure FilterGraphTreeGetText(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+      var CellText: string);
+    procedure FilterGraphTreeGetNodeDataSize(Sender: TBaseVirtualTree;
+      var NodeDataSize: Integer);
+    procedure FilterGraphTreeDragAllowed(Sender: TBaseVirtualTree;
+      Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
+    procedure FilterGraphTreeDragOver(Sender: TBaseVirtualTree; Source: TObject;
+      Shift: TShiftState; State: TDragState; Pt: TPoint; Mode: TDropMode;
+      var Effect: Integer; var Accept: Boolean);
+    procedure FilterGraphTreeDragDrop(Sender: TBaseVirtualTree; Source: TObject;
+      DataObject: IDataObject; Formats: TFormatArray; Shift: TShiftState;
+      Pt: TPoint; var Effect: Integer; Mode: TDropMode);
+    procedure FilterGraphTreeAddToSelection(Sender: TBaseVirtualTree;
+      Node: PVirtualNode);
+    procedure FilterGraphTreeAfterItemPaint(Sender: TBaseVirtualTree;
+      TargetCanvas: TCanvas; Node: PVirtualNode; ItemRect: TRect);
   private
-    procedure OnNewStream(lines: TStrings);
-    procedure OnNewText(Text: widestring);
-
-    procedure SaveSettings;
-    procedure LoadSettings;
-    procedure UpdateColorBoxes;
-
-    procedure LoadScript(path: string);
-    function GetSpyWindowText(Hwnd: THandle): string;
-  private
-    agserv: TAGTHServer;
-    jstp: JavaScriptTextProcessor;
-    trans: TTranslator;
-    SpyWindowHwnd: THandle;
-    IsSpyWindowSearch: boolean;
-  protected
-    procedure WMSyscommand(var Message: TWmSysCommand); message WM_SYSCOMMAND;
+    HostPanel: THostPlugunUIPanel;
+    TextProcessorManager: TTextProcessorManager;
+    SettingsFile: TSettingsFile;
+    procedure UpdateTree;
+    procedure AddItemsToTree(TextProcessorNode: TTextProcessorNode;
+      AParentVisualNode: PVirtualNode = nil);
+    function GetSelectedGraphNode: PVirtualNode;
+    function GetSelectedGraphNodeData: TTextProcessorNode;
+    function IsDescendantNode(AVirtualTree: TBaseVirtualTree;
+      Ancestor, DescendantCandidate: PVirtualNode): Boolean;
+  public
+    { Public declarations }
   end;
 
-const
-  crCustomCrossHair = 1;
+  PTextProcessorNode = ^TTextProcessorNode;
 
-  cbTextarea = 0;
-  cbClipboard = 1;
-  cbCustomWindow = 2;
+type
+  TIterateData = record
+    Ancestor, DescendantCandidate: PVirtualNode;
+    IsDescendant: Boolean;
+  end;
+
+  PIterateData = ^TIterateData;
 
 var
   MainForm: TMainForm;
 
 implementation
 
-uses psapi, shellapi, CLIPBRD, SysUtils, Windows,
-  System.UITypes,
-  //
-  OSD,
-  Inject,
-  GoogleTranslate,
-  YandexTranslate,
-  uSettings;
+uses
+  JSON,
+  ApplicationCore;
 
 {$R *.dfm}
 
-procedure TMainForm.WMSyscommand(var Message: TWmSysCommand);
+procedure TMainForm.FilterGraphTreeAddToSelection(Sender: TBaseVirtualTree;
+  Node: PVirtualNode);
+var
+  NodeData: PTextProcessorNode;
 begin
-  case (message.CmdType and $FFF0) of
-    SC_MINIMIZE:
-      begin
-        ShowWindow(Handle, SW_MINIMIZE);
-        message.Result := 0;
-      end;
-    SC_RESTORE:
-      begin
-        ShowWindow(Handle, SW_RESTORE);
-        message.Result := 0;
-      end;
+  NodeData := Sender.GetNodeData(Node);
+
+  NodeData^.Root.IterateSubtree( // Hide All Gui's
+    procedure(ANode: TTextProcessorNode; var Done: Boolean)
+    begin
+      if ANode <> ANode.Root then
+        ANode.HideTextProcessorGUI;
+    end);
+
+  NodeData^.ShowTextProcessorGUI;
+  HostPanel.Resize;
+end;
+
+procedure TMainForm.FilterGraphTreeAfterItemPaint(Sender: TBaseVirtualTree;
+TargetCanvas: TCanvas; Node: PVirtualNode; ItemRect: TRect);
+var
+  Level: Integer;
+  x: Integer;
+begin
+  Level := Sender.GetNodeLevel(Node);
+  if Level = 0 then
+    exit;
+
+  TargetCanvas.Pen.Color := TVirtualStringTree(Sender).Colors.TreeLineColor;
+
+  x := Level * TVirtualStringTree(Sender).Indent;
+  TargetCanvas.MoveTo(x, ItemRect.CenterPoint.Y - 3);
+  TargetCanvas.LineTo(x + 4, ItemRect.CenterPoint.Y + 1);
+
+  TargetCanvas.MoveTo(x, ItemRect.CenterPoint.Y + 3);
+  TargetCanvas.LineTo(x + 4, ItemRect.CenterPoint.Y - 1);
+
+  TargetCanvas.MoveTo(x, ItemRect.CenterPoint.Y);
+  TargetCanvas.LineTo(x + 4, ItemRect.CenterPoint.Y);
+end;
+
+procedure TMainForm.FilterGraphTreeDragAllowed(Sender: TBaseVirtualTree;
+Node: PVirtualNode; Column: TColumnIndex; var Allowed: Boolean);
+begin
+  Allowed := true;
+end;
+
+procedure TMainForm.FilterGraphTreeDragDrop(Sender: TBaseVirtualTree;
+Source: TObject; DataObject: IDataObject; Formats: TFormatArray;
+Shift: TShiftState; Pt: TPoint; var Effect: Integer; Mode: TDropMode);
+var
+  pSource, pTarget: PVirtualNode;
+  SourceNodeData: PTextProcessorNode;
+  TargetNodeData: PTextProcessorNode;
+begin
+  pSource := TVirtualStringTree(Source).FocusedNode;
+  pTarget := Sender.DropTargetNode;
+
+  SourceNodeData := TVirtualStringTree(Source).GetNodeData(pSource);
+  TargetNodeData := TVirtualStringTree(Source).GetNodeData(pTarget);
+  if Assigned(TargetNodeData) then
+    SourceNodeData^.MoveTo(TargetNodeData^)
   else
-    inherited;
-  end;
+    SourceNodeData^.MoveTo(TextProcessorManager.TextProcessorTree);
+
+  UpdateTree;
 end;
 
-procedure TMainForm.SaveSettings;
+procedure TMainForm.FilterGraphTreeDragOver(Sender: TBaseVirtualTree;
+Source: TObject; Shift: TShiftState; State: TDragState; Pt: TPoint;
+Mode: TDropMode; var Effect: Integer; var Accept: Boolean);
 var
-  Settings: TSettingsFile;
+  dropNode, dragNode: PVirtualNode;
+  IsDescendant, IsSameNode, IsSameTree: Boolean;
 begin
-  Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
-  try
-    Settings.WriteBool('Main', 'ClipboardCopy', ClipboardCopy.checked);
-    Settings.WriteInteger('Main', 'CurrentTab', PageControl.TabIndex);
+  dropNode := Sender.DropTargetNode;
+  dragNode := Sender.GetSortedSelection(true)[0];
 
-    Settings.BeginSection('TextareaFont');
-    Settings.WriteString('Name', Memo.Font.Name);
-    Settings.WriteInteger('CharSet', Memo.Font.CharSet);
-    Settings.WriteString('Color', inttohex(Memo.Font.Color, 8));
-    Settings.WriteInteger('Size', Memo.Font.Size);
-    Settings.WriteInteger('Style', Byte(Memo.Font.Style));
-    Settings.EndSection;
-
-    Settings.BeginSection('Translate');
-    Settings.WriteBool('DoTranslate', DoTranslate.checked);
-    Settings.WriteString('SrcLang', SrcLang.Text);
-    Settings.WriteString('DestLang', DestLang.Text);
-    Settings.EndSection;
-
-    Settings.BeginSection('OSD');
-    Settings.WriteBool('EnableOSD', cbEnableOSD.checked);
-    Settings.WriteString('OSDSource', cbOSDSource.Text);
-
-    Settings.WriteInteger('PositionX', tbX.Position);
-    Settings.WriteInteger('PositionY', tbY.Position);
-    Settings.WriteInteger('PositionWidth', tbWidth.Position);
-    Settings.WriteInteger('PositionHeight', tbHeight.Position);
-    Settings.WriteString('FontName', OSDForm.TextFont.Name);
-    Settings.WriteInteger('FontCharSet', OSDForm.TextFont.CharSet);
-    Settings.WriteInteger('FontSize', OSDForm.TextFont.Size);
-    Settings.WriteInteger('FontStyle', Byte(OSDForm.TextFont.Style));
-    Settings.WriteString('FontColor', inttohex(OSDForm.TextColor, 8));
-    Settings.WriteString('OutlineColor', inttohex(OSDForm.OutlineColor, 8));
-    Settings.WriteInteger('OutlineWidth', OSDForm.OutlineWidth);
-    Settings.WriteBool('Sticky', cbSticky.checked);
-    Settings.EndSection;
-
-    Settings.BeginSection('AGTH');
-    Settings.WriteString('HCode', edHCode.Text);
-    Settings.WriteInteger('CopyDelay', seDelay.Value);
-    Settings.EndSection;
-
-    Settings.BeginSection('jstp');
-    Settings.WriteString('ScriptPath', jstp.ScriptPath);
-    Settings.WriteBool('EnablePreProcess', chbTextProcessor.checked);
-    Settings.EndSection;
-  finally
-    Settings.Free;
-  end;
+  IsDescendant := IsDescendantNode(Sender, dragNode, dropNode);
+  IsSameNode := (dragNode = dropNode);
+  IsSameTree := (Sender = Source);
+  Accept := not IsDescendant and not IsSameNode and IsSameTree;
 end;
 
-procedure TMainForm.LoadSettings;
+procedure IterateCallback(Sender: TBaseVirtualTree; Node: PVirtualNode;
+Data: Pointer; var Abort: Boolean);
+begin
+  PIterateData(Data).IsDescendant :=
+    (PIterateData(Data).DescendantCandidate = Node);
+  Abort := PIterateData(Data).IsDescendant;
+end;
+
+function TMainForm.IsDescendantNode(AVirtualTree: TBaseVirtualTree;
+Ancestor, DescendantCandidate: PVirtualNode): Boolean;
 var
-  Settings: TSettingsFile;
-  str: string;
+  AData: TIterateData;
 begin
-  Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
-  try
-    Settings.BeginSection('Main');
-    ClipboardCopy.checked := Settings.ReadBool('ClipboardCopy', False);
-    PageControl.TabIndex := Settings.ReadInteger('CurrentTab', 0);
+  AData.Ancestor := Ancestor;
+  AData.DescendantCandidate := DescendantCandidate;
+  AData.IsDescendant := false;
+  AVirtualTree.IterateSubtree(Ancestor, IterateCallback, @AData, []);
+  Result := AData.IsDescendant;
+end;
 
-    Settings.BeginSection('TextareaFont');
-    Memo.Font.Name := Settings.ReadString('Name', Memo.Font.Name);
-    Memo.Font.CharSet := Byte(Settings.ReadInteger('CharSet',
-      Memo.Font.CharSet));
-    Memo.Font.Color := StrToInt('$' + Settings.ReadString('Color',
-      inttohex(Memo.Font.Color, 8)));
-    Memo.Font.Size := Settings.ReadInteger('Size', Memo.Font.Size);
-    Memo.Font.Style :=
-      TFontStyles(Byte(Settings.ReadInteger('Style', Byte(Memo.Font.Style))));
+procedure TMainForm.FilterGraphTreeGetNodeDataSize(Sender: TBaseVirtualTree;
+var NodeDataSize: Integer);
+begin
+  NodeDataSize := SizeOf(TObject);
+end;
 
-    Settings.BeginSection('Translate');
-    DoTranslate.checked := Settings.ReadBool('DoTranslate', False);
+procedure TMainForm.FilterGraphTreeGetText(Sender: TBaseVirtualTree;
+Node: PVirtualNode; Column: TColumnIndex; TextType: TVSTTextType;
+var CellText: string);
+var
+  NodeData: PTextProcessorNode;
+begin
+  NodeData := Sender.GetNodeData(Node);
+  if Assigned(NodeData^) then
+    CellText := NodeData^.Info.Name
+  else
+    CellText := 'Not Assighed!';
+end;
 
-    str := Settings.ReadString('SrcLang', 'Japanese');
-    SrcLang.ItemIndex := SrcLang.Items.IndexOf(str);
-
-    str := Settings.ReadString('DestLang', 'Russian');
-    DestLang.ItemIndex := DestLang.Items.IndexOf(str);
-
-    OnLangSelect(SrcLang);
-    Settings.EndSection;
-
-    Settings.BeginSection('OSD');
-    cbEnableOSD.checked := Settings.ReadBool('EnableOSD', False);
-    str := Settings.ReadString('OSDSource', 'Textarea');
-    cbOSDSource.ItemIndex := cbOSDSource.Items.IndexOf(str);
-    cbOSDSourceChange(cbOSDSource);
-
-    tbX.Position := Settings.ReadInteger('PositionX', 50);
-    tbY.Position := Settings.ReadInteger('PositionY', 100);
-    tbWidth.Position := Settings.ReadInteger('PositionWidth', 100);
-    tbHeight.Position := Settings.ReadInteger('PositionHeight', 20);
-
-    OSDForm.TextFont.Name := Settings.ReadString('FontName',
-      'Arial Unicode MS');
-    OSDForm.TextFont.CharSet := Byte(Settings.ReadInteger('FontCharSet', 0));
-    OSDForm.TextFont.Size := Settings.ReadInteger('FontSize', 15);
-    OSDForm.TextFont.Style :=
-      TFontStyles(Byte(Settings.ReadInteger('FontStyle', 0)));
-
-    OSDForm.TextColor := StrToInt('$' + Settings.ReadString('FontColor',
-      inttohex(clWhite, 8)));
-    OSDForm.OutlineColor := StrToInt('$' + Settings.ReadString('OutlineColor',
-      inttohex(clBlack, 8)));
-
-    OSDForm.OutlineWidth := Settings.ReadInteger('OutlineWidth', 1);
-    cbSticky.checked := Settings.ReadBool('Sticky', True);
-    Settings.EndSection;
-
-    tbOutline.Position := OSDForm.OutlineWidth;
-
-    Settings.BeginSection('AGTH');
-    edHCode.Text := Settings.ReadString('HCode', '');
-    seDelay.Value := Settings.ReadInteger('CopyDelay', 150);
-    Settings.EndSection;
-
-    Settings.BeginSection('jstp');
-    LoadScript(Settings.ReadString('ScriptPath', ''));
-    chbTextProcessor.checked := Settings.ReadBool('EnablePreProcess', False);
-    Settings.EndSection;
-  finally
-    Settings.Free;
+function TMainForm.GetSelectedGraphNode: PVirtualNode;
+var
+  Node: PVirtualNode;
+begin
+  Result := nil;
+  for Node in FilterGraphTree.SelectedNodes() do
+  begin
+    Result := Node;
+    break;
   end;
 end;
 
-procedure TMainForm.FormClose(Sender: TObject; var Action: TCloseAction);
+function TMainForm.GetSelectedGraphNodeData: TTextProcessorNode;
+var
+  Node: PVirtualNode;
+  NodeData: PTextProcessorNode;
 begin
-  trans.Free;
-  agserv.Free;
-  SaveSettings;
-  jstp.Free;
-  OSDForm.Free;
+  Node := GetSelectedGraphNode;
+  if Assigned(Node) then
+  begin
+    NodeData := FilterGraphTree.GetNodeData(Node);
+    Result := NodeData^;
+  end
+  else
+    Result := nil;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 var
-  Settings: TSettingsFile;
-  YandexApiKey: string;
+  MenuItem: TMenuItem;
+  i: Integer;
+  List: TList<ITextProcessorInfo>;
+  AppWindows: IApplicationWindows;
 begin
-  SpyWindowHwnd := INVALID_HANDLE_VALUE;
-  IsSpyWindowSearch := False;
-  Screen.Cursors[crCustomCrossHair] := LoadCursor(hInstance, 'CrosshairCursor');
+  HostPanel := THostPlugunUIPanel.Create(HostPanelStub);
+  HostPanel.Parent := HostPanelStub;
 
-  Settings := TSettingsFile.Create('Config', 'Easy Text Hooker', True);
+  SettingsFile := TSettingsFile.Create('Config', 'Easy Text Hooker', true);
+
+  AppWindows := TApplicationWindows.Create(Application.Handle, self.Handle,
+    HostPanel.Handle);
+  TextProcessorManager := TTextProcessorManager.Create(AppWindows);
+  TextProcessorManager.LoadTree(SettingsFile.ConfigNode);
+
+  List := TList<ITextProcessorInfo>.Create;
   try
-    Settings.BeginSection('Translate');
-    YandexApiKey := Settings.ReadString('YandexApiKey', '');
-  finally
-    Settings.Free;
-  end;
-  trans := TGoogleTranslate.Create();
+    TextProcessorManager.GetAvailableTextProcessors(List);
 
-  jstp := JavaScriptTextProcessor.Create;
-  OSDForm := TOSDForm.Create(nil);
-  agserv := TAGTHServer.Create;
-  agserv.OnNewStream := OnNewStream;
-  agserv.OnNewText := OnNewText;
-  agserv.EndLineDelay := 200;
-
-  trans.GetFromLanguages(SrcLang.Items);
-  trans.GetToLanguages(DestLang.Items);
-
-  LoadSettings;
-  UpdateColorBoxes;
-end;
-
-function TMainForm.GetSpyWindowText(Hwnd: THandle): string;
-var
-  Text: string;
-begin
-  if Hwnd <> INVALID_HANDLE_VALUE then
-  begin
-    SetLength(Text, SendMessage(Hwnd, WM_GETTEXTLENGTH, 0, 0) + 1);
-    SendMessage(Hwnd, WM_GETTEXT, length(Text), Integer(PChar(Text)));
-    Result := Text;
-  end
-  else
-    Result := '';
-end;
-
-procedure TMainForm.OSDTimerTimer(Sender: TObject);
-var
-  s: string;
-begin
-  try
-    if cbOSDSource.ItemIndex = cbClipboard then
-      OSDForm.SetText(Clipboard.AsText)
-    else if (cbOSDSource.ItemIndex = cbCustomWindow) and not IsSpyWindowSearch
-    then
+    for i := 0 to List.Count - 1 do
     begin
-      s := GetSpyWindowText(SpyWindowHwnd);
-      OSDForm.SetText(s);
-    end;
-  except
-    // who cares?
-  end;
-end;
-
-procedure TMainForm.cbOSDSourceChange(Sender: TObject);
-var
-  res: boolean;
-begin
-  res := cbOSDSource.ItemIndex = cbCustomWindow;
-  imgSelectWindow.Visible := res;
-  lbWindowName.Visible := res;
-  imgSelectWindow.Repaint;
-end;
-
-procedure TMainForm.OSDPosChange(Sender: TObject);
-begin
-  OSDForm.SetPosition(tbX.Position, tbY.Position, tbWidth.Position,
-    tbHeight.Position);
-end;
-
-procedure TMainForm.UpdateColorBoxes;
-begin
-  with imgTextColor.Canvas do
-  begin
-    Brush.Style := bsSolid;
-    Brush.Color := OSDForm.TextColor;
-    FillRect(ClipRect);
-
-    Pen.Color := clBlack;
-    Rectangle(0, 0, imgTextColor.Width, imgTextColor.Height);
-  end;
-
-  with imgOutlineColor.Canvas do
-  begin
-    Brush.Style := bsSolid;
-    Brush.Color := OSDForm.OutlineColor;
-    FillRect(ClipRect);
-
-    Pen.Color := clBlack;
-    Rectangle(0, 0, imgOutlineColor.Width, imgOutlineColor.Height);
-  end;
-end;
-
-procedure TMainForm.imgOutlineColorClick(Sender: TObject);
-begin
-  ColorDialog1.Color := OSDForm.OutlineColor;
-  if ColorDialog1.Execute(Handle) then
-    OSDForm.OutlineColor := ColorDialog1.Color;
-  UpdateColorBoxes;
-end;
-
-procedure TMainForm.imgSelectWindowMouseMove(Sender: TObject;
-  Shift: TShiftState; X, Y: Integer);
-const
-  MaxLength = 100;
-var
-  CustomHwnd: THandle;
-  Text: string;
-  Size: Integer;
-begin
-  if cbOSDSource.ItemIndex = cbCustomWindow then
-  begin
-    if ssLeft in Shift then
-    begin
-      Screen.Cursor := crCustomCrossHair;
-      IsSpyWindowSearch := True;
-      CustomHwnd := windowFromPoint(Mouse.CursorPos);
-      OSDForm.SetText(GetSpyWindowText(CustomHwnd));
-
-      SetLength(Text, MaxLength);
-      Size := GetClassName(CustomHwnd, PChar(Text), MaxLength);
-      SetLength(Text, Size);
-      lbWindowName.Caption := Text;
-    end
-    else
-      Screen.Cursor := crDefault;
-  end;
-end;
-
-procedure TMainForm.imgSelectWindowMouseUp(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-begin
-  IsSpyWindowSearch := False;
-  if cbOSDSource.ItemIndex = cbCustomWindow then
-  begin
-    Screen.Cursor := crDefault;
-    SpyWindowHwnd := windowFromPoint(Mouse.CursorPos);
-  end;
-end;
-
-procedure TMainForm.imgTextColorClick(Sender: TObject);
-begin
-  ColorDialog1.Color := OSDForm.TextColor;
-  if ColorDialog1.Execute(Handle) then
-    OSDForm.TextColor := ColorDialog1.Color;
-  UpdateColorBoxes;
-end;
-
-procedure TMainForm.seDelayChange(Sender: TObject);
-begin
-  agserv.EndLineDelay := seDelay.Value;
-end;
-
-procedure TMainForm.OnLangSelect(Sender: TObject);
-begin
-  trans.SetTranslationDirection(SrcLang.Text, DestLang.Text);
-end;
-
-procedure TMainForm.tbOutlineChange(Sender: TObject);
-begin
-  OSDForm.OutlineWidth := tbOutline.Position;
-end;
-
-procedure TMainForm.FontSetClick(Sender: TObject);
-begin
-  FontDialog.Font := Memo.Font;
-  if FontDialog.Execute then
-    Memo.Font := FontDialog.Font;
-end;
-
-procedure TMainForm.btnHookClick(Sender: TObject);
-var
-  pid: Cardinal;
-  idx: Integer;
-begin
-  idx := cbProcess.ItemIndex;
-  if (idx >= 0) and (idx < cbProcess.Items.Count) then
-  begin
-    pid := Cardinal(cbProcess.Items.Objects[cbProcess.ItemIndex]);
-    THooker.HookProcess(pid, edHCode.Text);
-  end;
-  cbProcessChange(cbProcess);
-end;
-
-procedure TMainForm.btnOsdFontSelectClick(Sender: TObject);
-begin
-  FontDialog.Font := OSDForm.TextFont;
-  if FontDialog.Execute then
-    OSDForm.TextFont := FontDialog.Font;
-end;
-
-procedure TMainForm.btnScriptLoadClick(Sender: TObject);
-begin
-  OpenDialog.Filter := '*.js|*.js';
-  OpenDialog.InitialDir := ExtractFilePath(paramstr(0));
-  if OpenDialog.Execute(Self.Handle) then
-    LoadScript(OpenDialog.FileName);
-end;
-
-procedure TMainForm.LoadScript(path: string);
-begin
-  mScriptPath.Text := path;
-  jstp.LoadScript(path);
-  ScriptArea.Text := jstp.Script;
-  TRichEditJsHighlighter.jsHighlight(ScriptArea);
-end;
-
-procedure TMainForm.cbEnableOSDClick(Sender: TObject);
-begin
-  if cbEnableOSD.checked then
-    OSDForm.Show
-  else
-    OSDForm.Hide;
-end;
-
-procedure TMainForm.cbStickyClick(Sender: TObject);
-begin
-  OSDForm.Sticky := cbSticky.checked;
-end;
-
-procedure TMainForm.cbProcessChange(Sender: TObject);
-var
-  itindex: Integer;
-  pid: Cardinal;
-begin
-  itindex := cbProcess.ItemIndex;
-  pid := Cardinal(cbProcess.Items.Objects[itindex]);
-  btnHook.Enabled := not THooker.IsHooked(pid);
-end;
-
-procedure TMainForm.cbProcessDrawItem(Control: TWinControl; Index: Integer;
-  Rect: TRect; State: TOwnerDrawState);
-var
-  ComboBox: TComboBox;
-  Bitmap: Graphics.TBitmap;
-begin
-  ComboBox := (Control as TComboBox);
-  Bitmap := Graphics.TBitmap.Create;
-  try
-    ProcIcon.GetBitmap(index, Bitmap);
-    with ComboBox.Canvas do
-    begin
-      FillRect(Rect);
-      if Bitmap.Handle <> 0 then
-        Draw(Rect.Left + 2, Rect.Top, Bitmap);
-      Rect := Bounds(Rect.Left + ComboBox.ItemHeight + 2 + 5, Rect.Top,
-        Rect.Right - Rect.Left, Rect.Bottom - Rect.Top);
-      DrawText(Handle, PChar(ComboBox.Items[index]),
-        length(ComboBox.Items[index]), Rect, DT_VCENTER + DT_SINGLELINE);
+      MenuItem := TMenuItem.Create(PopupMenu1);
+      MenuItem.Caption := List[i].Name;
+      MenuItem.Tag := i;
+      MenuItem.OnClick := AddMenuItemClick;
+      MenuItem.ImageIndex := 1;
+      PopupMenu1.Items.Add(MenuItem);
     end;
   finally
-    Bitmap.Free;
+    List.Free;
   end;
+
+  UpdateTree();
 end;
 
-procedure TMainForm.cbProcessDropDown(Sender: TObject);
-var
-  itindex: Integer;
-  i: Integer;
-  pid: Cardinal;
-  proc: THandle;
-  buffer: array [0 .. MAX_PATH] of WideChar;
-  res: Integer;
-  ico: TIcon;
-  hico: THandle;
+procedure TMainForm.FormDestroy(Sender: TObject);
 begin
-  itindex := cbProcess.ItemIndex;
-  THooker.GetProcessList(cbProcess.Items);
-  ProcIcon.Clear;
-  for i := 0 to cbProcess.Items.Count - 1 do
+  TextProcessorManager.UnloadTreeAndSave(SettingsFile.ConfigNode);
+  SettingsFile.Free;
+  TextProcessorManager.Free;
+end;
+
+procedure TMainForm.PopupMenu1Popup(Sender: TObject);
+begin
+  PopupMenu1.Items[0].Enabled := Assigned(GetSelectedGraphNode());
+end;
+
+procedure TMainForm.DeleteMenuItemClick(Sender: TObject);
+var
+  Node: TTextProcessorNode;
+begin
+  Node := GetSelectedGraphNodeData;
+  if Assigned(Node) then
   begin
-    FillChar(buffer, MAX_PATH, 0);
+    Node.Remove;
+    UpdateTree;
+  end;
+end;
 
-    pid := Cardinal(cbProcess.Items.Objects[i]);
-    proc := OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ,
-      False, pid);
+procedure TMainForm.AddMenuItemClick(Sender: TObject);
+var
+  MenuItem: TMenuItem;
+  TextProcessorNode: TTextProcessorNode;
+  List: TList<ITextProcessorInfo>;
+  NodeData: TTextProcessorNode;
+  NewNode: TTextProcessorNode;
+  TextProcessorID: TGUID;
+begin
+  MenuItem := Sender as TMenuItem;
 
-    res := 0;
-    if proc <> 0 then
-    begin
-      res := GetModuleFileNameEx(proc, 0, buffer, MAX_PATH);
-      CloseHandle(proc);
-    end;
-
-    if res > 0 then
-    begin
-      hico := ExtractIcon(hInstance, buffer, 0);
-      if hico <> 0 then
-      begin
-        ico := TIcon.Create;
-        ico.Handle := hico;
-        ProcIcon.AddIcon(ico);
-        ico.Free;
-        DestroyIcon(hico);
-      end
-      else
-        ProcIcon.AddImage(Images, 0);
-    end
-    else
-      ProcIcon.AddImage(Images, 0);
+  List := TList<ITextProcessorInfo>.Create;
+  try
+    TextProcessorManager.GetAvailableTextProcessors(List);
+    TextProcessorID := List[MenuItem.Tag].ID;
+  finally
+    List.Free;
   end;
 
-  cbProcess.ItemIndex := itindex;
+  NodeData := GetSelectedGraphNodeData;
+  if Assigned(NodeData) then
+    TextProcessorNode := NodeData
+  else
+    TextProcessorNode := TextProcessorManager.TextProcessorTree;
+
+  NewNode := TextProcessorManager.NewTextProcessorNode(TextProcessorID);
+  if Assigned(NewNode) then
+    TextProcessorNode.InsertTextProcessorNode(NewNode);
+
+  UpdateTree;
 end;
 
-procedure TMainForm.cbStreamsChange(Sender: TObject);
-begin
-  agserv.SelectStream(cbStreams.ItemIndex);
-  agserv.GetStreamText(AGTHMemo.lines);
-  AGTHMemo.SelStart := AGTHMemo.Perform(EM_LINEINDEX, AGTHMemo.lines.Count, 0);
-  AGTHMemo.Perform(EM_SCROLLCARET, 0, 0);
-end;
-
-procedure TMainForm.OnNewStream(lines: TStrings);
+procedure TMainForm.AddItemsToTree(TextProcessorNode: TTextProcessorNode;
+AParentVisualNode: PVirtualNode = nil);
 var
+  NewNode: PVirtualNode;
   i: Integer;
 begin
-  i := cbStreams.ItemIndex;
-  cbStreams.Items.Assign(lines);
-  cbStreams.ItemIndex := i;
+  for i := 0 to TextProcessorNode.ChildCount - 1 do
+  begin
+    NewNode := FilterGraphTree.AddChild(AParentVisualNode,
+      TextProcessorNode.Childs[i]);
+    AddItemsToTree(TextProcessorNode.Childs[i], NewNode);
+  end;
 end;
 
-procedure TMainForm.OnNewText(Text: widestring);
-var
-  s: string;
+procedure TMainForm.UpdateTree;
 begin
-  agserv.GetStreamText(AGTHMemo.lines);
-  AGTHMemo.SelStart := AGTHMemo.Perform(EM_LINEINDEX, AGTHMemo.lines.Count, 0);
-  AGTHMemo.Perform(EM_SCROLLCARET, 0, 0);
-
-  if chbTextProcessor.checked then
-    s := jstp.ProcessText(Text)
-  else
-    s := Text;
-
-  if s = '' then
-    exit;
-
-  if DoTranslate.checked then
-    s := trans.Translate(s);
-
-  if (cbEnableOSD.checked) and (cbOSDSource.ItemIndex = cbTextarea) then
-    OSDForm.SetText(s);
-
-  if ClipboardCopy.checked then
-    try
-      Clipboard.AsText := s;
-    except
-      // what can i do?
-    end;
-
-  Memo.Text := s;
+  FilterGraphTree.Clear;
+  AddItemsToTree(TextProcessorManager.TextProcessorTree);
+  FilterGraphTree.FullExpand();
 end;
 
 end.
