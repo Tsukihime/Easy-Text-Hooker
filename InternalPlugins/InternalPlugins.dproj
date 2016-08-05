@@ -125,6 +125,17 @@
         <DCCReference Include="TextProcessors\DllTreadSynchronizer.pas"/>
         <DCCReference Include="TextProcessors\CopyToClipboard\CopyToClipboardTextProcessor.pas"/>
         <DCCReference Include="TextProcessors\GetFromClipboard\GetFromClipboardTextProcesor.pas"/>
+        <DCCReference Include="TextProcessors\CaptureWindowText\CaptureWindowTextProcessor.pas"/>
+        <DCCReference Include="TextProcessors\CaptureWindowText\CaptureWindowTextUI.pas">
+            <Form>CaptureSettingsForm</Form>
+        </DCCReference>
+        <DCCReference Include="TextProcessors\Utils\initprocs.pas"/>
+        <DCCReference Include="TextProcessors\Utils\WindowCapture.pas"/>
+        <DCCReference Include="TextProcessors\PutTextToWindow\PutTextToWindowTextProcessor.pas"/>
+        <DCCReference Include="TextProcessors\PutTextToWindow\PutTextToWindowUI.pas">
+            <Form>PutSettingsForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <RcItem Include="Crosshair.cur">
             <ResourceType>CURSOR</ResourceType>
             <ResourceId>CrosshairCursor</ResourceId>

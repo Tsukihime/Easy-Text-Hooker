@@ -59,12 +59,10 @@ type
       : Boolean; override;
   end;
 
-const
-  crCustomCrossHair = 1;
-
 implementation
 
 uses
+  initprocs,
   Inject,
   psapi,
   shellapi;
@@ -222,8 +220,6 @@ begin
     cbProcess.ItemIndex := Index;
     cbProcessChange(cbProcess);
   end;
-
-  Screen.Cursors[crCustomCrossHair] := LoadCursor(hInstance, 'CrosshairCursor');
 end;
 
 procedure TAGTHForm.FormDestroy(Sender: TObject);
