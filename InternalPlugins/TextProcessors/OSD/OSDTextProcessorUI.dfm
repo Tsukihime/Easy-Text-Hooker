@@ -27,6 +27,9 @@ object OSDSettings: TOSDSettings
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Font'
     TabOrder = 1
+    DesignSize = (
+      384
+      102)
     object Label14: TLabel
       Left = 11
       Top = 22
@@ -58,14 +61,36 @@ object OSDSettings: TOSDSettings
       OnClick = imgOutlineColorClick
     end
     object Label16: TLabel
-      Left = 11
-      Top = 78
+      Left = 182
+      Top = 50
       Width = 67
       Height = 13
       Caption = 'Outline width:'
     end
+    object Label1: TLabel
+      Left = 11
+      Top = 78
+      Width = 86
+      Height = 13
+      Caption = 'Background color:'
+    end
+    object imgBackgroundColor: TImage
+      Left = 113
+      Top = 71
+      Width = 55
+      Height = 21
+      Cursor = crHandPoint
+      OnClick = imgBackgroundColorClick
+    end
+    object Label3: TLabel
+      Left = 182
+      Top = 78
+      Width = 70
+      Height = 13
+      Caption = 'Transparency:'
+    end
     object btnOsdFontSelect: TButton
-      Left = 192
+      Left = 182
       Top = 16
       Width = 75
       Height = 25
@@ -74,10 +99,11 @@ object OSDSettings: TOSDSettings
       OnClick = btnOsdFontSelectClick
     end
     object tbOutline: TTrackBar
-      Left = 107
-      Top = 76
-      Width = 70
+      Left = 263
+      Top = 47
+      Width = 118
       Height = 16
+      Anchors = [akLeft, akTop, akRight]
       Max = 9
       Position = 1
       PositionToolTip = ptTop
@@ -86,6 +112,20 @@ object OSDSettings: TOSDSettings
       TickMarks = tmBoth
       TickStyle = tsNone
       OnChange = tbOutlineChange
+    end
+    object tbBackgroundTransparency: TTrackBar
+      Left = 263
+      Top = 76
+      Width = 118
+      Height = 16
+      Anchors = [akLeft, akTop, akRight]
+      Max = 255
+      PositionToolTip = ptTop
+      TabOrder = 2
+      ThumbLength = 15
+      TickMarks = tmBoth
+      TickStyle = tsNone
+      OnChange = tbBackgroundTransparencyChange
     end
   end
   object GroupBox4: TGroupBox

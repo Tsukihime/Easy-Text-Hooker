@@ -90,7 +90,14 @@ begin
 
     OutlineWidth := Settings.ReadInteger('OutlineWidth', 1);
     OSDForm.OutlineWidth := OutlineWidth;
-    tbOutline.Position := OutlineWidth;;
+    tbOutline.Position := OutlineWidth;
+
+    OSDForm.BackgroundColor :=
+      StrToInt('$' + Settings.ReadString('BackgroundColor',
+      inttohex(clBlack, 8)));
+    OSDForm.BackgroundTransparency :=
+      Settings.ReadInteger('BackgroundTransparency', 77);
+    tbBackgroundTransparency.Position := OSDForm.BackgroundTransparency;
 
     FOSDSettings.cbSticky.checked := Settings.ReadBoolean('Sticky', True);
     UpdateColorBoxes;
@@ -117,6 +124,10 @@ begin
     Settings.WriteString('FontColor', inttohex(OSDForm.TextColor, 8));
     Settings.WriteString('OutlineColor', inttohex(OSDForm.OutlineColor, 8));
     Settings.WriteInteger('OutlineWidth', OSDForm.OutlineWidth);
+    Settings.WriteString('BackgroundColor',
+      inttohex(OSDForm.BackgroundColor, 8));
+    Settings.WriteInteger('BackgroundTransparency',
+      OSDForm.BackgroundTransparency);
     Settings.ReadBoolean('Sticky', cbSticky.checked);
   end;
 

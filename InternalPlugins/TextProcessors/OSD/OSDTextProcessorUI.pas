@@ -33,6 +33,10 @@ type
     cbHideOSD: TCheckBox;
     ColorDialog1: TColorDialog;
     FontDialog: TFontDialog;
+    Label1: TLabel;
+    imgBackgroundColor: TImage;
+    Label3: TLabel;
+    tbBackgroundTransparency: TTrackBar;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure imgOutlineColorClick(Sender: TObject);
@@ -42,6 +46,8 @@ type
     procedure OSDPosChange(Sender: TObject);
     procedure cbStickyClick(Sender: TObject);
     procedure cbHideOSDClick(Sender: TObject);
+    procedure imgBackgroundColorClick(Sender: TObject);
+    procedure tbBackgroundTransparencyChange(Sender: TObject);
   private
     FOSDForm: TOSDForm;
     FMainFormHandle: HWnd;
@@ -95,6 +101,14 @@ begin
   FOSDForm.Free;
 end;
 
+procedure TOSDSettings.imgBackgroundColorClick(Sender: TObject);
+begin
+  ColorDialog1.Color := OSDForm.BackgroundColor;
+  if ColorDialog1.Execute(Handle) then
+    OSDForm.BackgroundColor := ColorDialog1.Color;
+  UpdateColorBoxes;
+end;
+
 procedure TOSDSettings.imgOutlineColorClick(Sender: TObject);
 begin
   ColorDialog1.Color := OSDForm.OutlineColor;
@@ -114,6 +128,11 @@ end;
 procedure TOSDSettings.tbOutlineChange(Sender: TObject);
 begin
   OSDForm.OutlineWidth := tbOutline.Position;
+end;
+
+procedure TOSDSettings.tbBackgroundTransparencyChange(Sender: TObject);
+begin
+  OSDForm.BackgroundTransparency := tbBackgroundTransparency.Position;
 end;
 
 procedure TOSDSettings.UpdateColorBoxes;
@@ -136,6 +155,16 @@ begin
 
     Pen.Color := clBlack;
     Rectangle(0, 0, imgOutlineColor.Width, imgOutlineColor.Height);
+  end;
+
+  with imgBackgroundColor.Canvas do
+  begin
+    Brush.Style := bsSolid;
+    Brush.Color := OSDForm.BackgroundColor;
+    FillRect(ClipRect);
+
+    Pen.Color := clBlack;
+    Rectangle(0, 0, imgBackgroundColor.Width, imgBackgroundColor.Height);
   end;
 end;
 

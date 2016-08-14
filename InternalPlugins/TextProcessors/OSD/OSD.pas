@@ -27,6 +27,8 @@ type
     FSticky: boolean;
     FBoundRect: TRect;
     FMainFormHandle: HWND;
+    FBackgroundColor: TColor;
+    FBackgroundTransparency: Integer;
     procedure UpdateWindow(Surface: TGPBitmap);
     procedure RepaintWindow;
     procedure SetTextColor(const Value: TColor);
@@ -35,15 +37,21 @@ type
     procedure SetOutlineColor(const Value: TColor);
     procedure setOutlineWidth(const Value: Integer);
     procedure SetDrawWindowOutline(const Value: boolean);
-    function BGR2ARGB(col: TColor): Cardinal;
+    function BGR2ARGB(col: TColor; Alpha: UInt8 = 255): Cardinal;
     function FontStyle2GPFontStyle(Style: TFontStyles): Integer;
     procedure SetSticky(const Value: boolean);
+    procedure SetBackgroundColor(const Value: TColor);
+    procedure SetBackgroundTransparency(const Value: Integer);
   public
     procedure SetText(Text: widestring);
     procedure SetPosition(X, Y, Width, Height: Integer);
 
     property TextColor: TColor read FTextColor write SetTextColor;
     property OutlineColor: TColor read FOutlineColor write SetOutlineColor;
+    property BackgroundColor: TColor read FBackgroundColor
+      write SetBackgroundColor;
+    property BackgroundTransparency: Integer read FBackgroundTransparency
+      write SetBackgroundTransparency;
     property TextFont: TFont read GetFont write SetFont;
     property OutlineWidth: Integer read FOutlineWidth write setOutlineWidth;
     property DrawWindowOutline: boolean read FDrawWindowOutline
@@ -88,14 +96,14 @@ begin
   DeleteDC(dcSrc);
 end;
 
-function TOSDForm.BGR2ARGB(col: TColor): Cardinal;
+function TOSDForm.BGR2ARGB(col: TColor; Alpha: UInt8): Cardinal;
 var
   r, g, b: byte;
 begin
   r := col and $FF;
   g := col shr 8 and $FF;
   b := col shr 16 and $FF;
-  Result := RGB(b, g, r) or $FF000000;
+  Result := RGB(b, g, r) or (Alpha shl 24);
 end;
 
 function TOSDForm.FontStyle2GPFontStyle(Style: TFontStyles): Integer;
@@ -116,7 +124,7 @@ var
   Surface: TGPBitmap;
   Graphics: TGPGraphics;
   Pen: TGPPen;
-  TextBrush, OutlineBrush: TGPSolidBrush;
+  TextBrush, OutlineBrush, BGBrush: TGPSolidBrush;
   WindowRect, TextRect, OutlineRect: TGPRectF;
   FontFamily: TGPFontFamily;
   GPFont: TGPFont;
@@ -134,6 +142,11 @@ begin
       WindowRect.Y := 0;
       WindowRect.Width := Width - 1;
       WindowRect.Height := Height - 1;
+
+      BGBrush := TGPSolidBrush.Create(BGR2ARGB(FBackgroundColor,
+        FBackgroundTransparency));
+      Graphics.FillRectangle(BGBrush, WindowRect);
+      BGBrush.Free;
 
       if FDrawWindowOutline then
       begin
@@ -206,6 +219,18 @@ begin
 
   SetWindowLong(Handle, GWL_EXSTYLE, WindowStyle);
   FBoundRect := Screen.DesktopRect;
+end;
+
+procedure TOSDForm.SetBackgroundColor(const Value: TColor);
+begin
+  FBackgroundColor := Value;
+  RepaintWindow;
+end;
+
+procedure TOSDForm.SetBackgroundTransparency(const Value: Integer);
+begin
+  FBackgroundTransparency := Value;
+  RepaintWindow;
 end;
 
 procedure TOSDForm.SetDrawWindowOutline(const Value: boolean);
