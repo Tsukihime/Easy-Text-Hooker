@@ -1,5 +1,6 @@
 Easy-Text-Hooker
 ================
+[ ![Download](https://api.bintray.com/packages/tsukihime/Easy-Text-Hooker/Easy-Text-Hooker/images/download.svg) ](https://bintray.com/tsukihime/Easy-Text-Hooker/Easy-Text-Hooker/_latestVersion)
 
 Copyright (c) 2013, Tsukihime
 All rights reserved.
