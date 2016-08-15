@@ -334,7 +334,7 @@ begin
   FText := Text;
   FOnTranslate := Callback;
   FTranslator := Translator;
-  Execute;
+  Start;
 end;
 
 procedure TTranslateThread.Execute;
